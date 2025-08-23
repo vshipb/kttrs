@@ -11,9 +11,9 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -80,17 +80,17 @@ fun TetrisGame(gameViewModel: GameViewModel = viewModel()) {
                         .fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    Button(onClick = { gameViewModel.movePiece(-1, 0) }) {
+                    OutlinedButton(onClick = { gameViewModel.movePiece(-1, 0) }) {
                         Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = "Left")
                     }
-                    Button(onClick = { gameViewModel.rotatePiece() }) {
+                    OutlinedButton(onClick = { gameViewModel.rotatePiece() }) {
                         Icon(Icons.Filled.Refresh, contentDescription = "Rotate")
                     }
-                    Button(onClick = { gameViewModel.movePiece(1, 0) }) {
+                    OutlinedButton(onClick = { gameViewModel.movePiece(1, 0) }) {
                         Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = "Right")
                     }
                 }
-                Button(onClick = { gameViewModel.movePiece(0, 1) }) {
+                OutlinedButton(onClick = { gameViewModel.movePiece(0, 1) }) {
                     Icon(Icons.Filled.KeyboardArrowDown, contentDescription = "Down")
                 }
             }
