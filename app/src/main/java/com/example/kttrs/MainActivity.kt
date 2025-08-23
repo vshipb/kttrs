@@ -23,9 +23,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.delay
+import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlin.math.min
-import kotlin.random.Random
 
 // Game constants
 const val BOARD_WIDTH = 10
@@ -55,8 +54,8 @@ val colors = listOf(
 data class Piece(
     val shape: List<List<Int>>,
     val color: Color,
-    var x: Int,
-    var y: Int
+    val x: Int,
+    val y: Int
 )
 
 class MainActivity : ComponentActivity() {
@@ -76,96 +75,11 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun TetrisGame() {
-    var board by remember { mutableStateOf(Array(BOARD_HEIGHT) { IntArray(BOARD_WIDTH) }) }
-    var currentPiece by remember { mutableStateOf(randomPiece()) }
-    var score by remember { mutableStateOf(0) }
-    var gameOver by remember { mutableStateOf(false) }
-
-    fun isValidPosition(piece: Piece): Boolean {
-        for (y in piece.shape.indices) {
-            for (x in piece.shape[y].indices) {
-                if (piece.shape[y][x] == 1) {
-                    val newX = piece.x + x
-                    val newY = piece.y + y
-                    if (newX < 0 || newX >= BOARD_WIDTH || newY >= BOARD_HEIGHT || newY < 0) {
-                        return false
-                    }
-                    if (newY >= 0 && board[newY][newX] != 0) {
-                        return false
-                    }
-                }
-            }
-        }
-        return true
-    }
-
-    fun clearLines() {
-        val newBoard = board.toMutableList()
-        var linesCleared = 0
-        for (y in board.indices.reversed()) {
-            if (board[y].all { it != 0 }) {
-                newBoard.removeAt(y)
-                linesCleared++
-            }
-        }
-        repeat(linesCleared) {
-            newBoard.add(0, IntArray(BOARD_WIDTH))
-        }
-        board = newBoard.toTypedArray()
-        score += linesCleared * 100
-    }
-
-    fun placePiece() {
-        for (y in currentPiece.shape.indices) {
-            for (x in currentPiece.shape[y].indices) {
-                if (currentPiece.shape[y][x] == 1) {
-                    board[currentPiece.y + y][currentPiece.x + x] = colors.indexOf(currentPiece.color) + 1
-                }
-            }
-        }
-        clearLines()
-        currentPiece = randomPiece()
-        if (!isValidPosition(currentPiece)) {
-            gameOver = true
-        }
-    }
-
-    fun movePiece(dx: Int, dy: Int) {
-        if (!gameOver) {
-            val newPiece = currentPiece.copy(x = currentPiece.x + dx, y = currentPiece.y + dy)
-            if (isValidPosition(newPiece)) {
-                currentPiece = newPiece
-            } else if (dy > 0) {
-                placePiece()
-            }
-        }
-    }
-
-    fun rotatePiece() {
-        if (!gameOver) {
-            val shape = currentPiece.shape
-            val newShape = List(shape[0].size) { y ->
-                List(shape.size) { x ->
-                    shape[shape.size - 1 - x][y]
-                }
-            }
-            val newPiece = currentPiece.copy(shape = newShape)
-            if (isValidPosition(newPiece)) {
-                currentPiece = newPiece
-            }
-        }
-    }
-
-    LaunchedEffect(key1 = gameOver) {
-        while (!gameOver) {
-            delay(500)
-            movePiece(0, 1)
-        }
-    }
+fun TetrisGame(gameViewModel: GameViewModel = viewModel()) {
+    val gameState by gameViewModel.gameState.collectAsState()
 
     Box(modifier = Modifier.fillMaxSize()) {
-        GameBoard(board, currentPiece, Modifier.fillMaxSize())
+        GameBoard(gameState.board, gameState.currentPiece, Modifier.fillMaxSize())
 
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -179,26 +93,26 @@ fun TetrisGame() {
                     .padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                if (gameOver) {
+                if (gameState.gameOver) {
                     Text("Game Over", style = MaterialTheme.typography.headlineLarge, color = Color.White)
                 }
-                Text("Score: $score", style = MaterialTheme.typography.headlineMedium, color = Color.White)
+                Text("Score: ${gameState.score}", style = MaterialTheme.typography.headlineMedium, color = Color.White)
                 Row(
                     modifier = Modifier
                         .fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    Button(onClick = { movePiece(-1, 0) }) {
+                    Button(onClick = { gameViewModel.movePiece(-1, 0) }) {
                         Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = "Left")
                     }
-                    Button(onClick = { rotatePiece() }) {
+                    Button(onClick = { gameViewModel.rotatePiece() }) {
                         Icon(Icons.Filled.Refresh, contentDescription = "Rotate")
                     }
-                    Button(onClick = { movePiece(1, 0) }) {
+                    Button(onClick = { gameViewModel.movePiece(1, 0) }) {
                         Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = "Right")
                     }
                 }
-                Button(onClick = { movePiece(0, 1) }) {
+                Button(onClick = { gameViewModel.movePiece(0, 1) }) {
                     Icon(Icons.Filled.KeyboardArrowDown, contentDescription = "Down")
                 }
             }
@@ -235,14 +149,4 @@ fun GameBoard(board: Array<IntArray>, piece: Piece, modifier: Modifier = Modifie
             }
         }
     }
-}
-
-fun randomPiece(): Piece {
-    val index = Random.nextInt(shapes.size)
-    return Piece(
-        shape = shapes[index],
-        color = colors[index],
-        x = BOARD_WIDTH / 2 - 1,
-        y = 0
-    )
 }
