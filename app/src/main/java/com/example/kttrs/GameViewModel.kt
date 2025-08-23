@@ -1,8 +1,11 @@
 package com.example.kttrs
 
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.kttrs.GameConstants.BOARD_HEIGHT
+import com.example.kttrs.GameConstants.BOARD_WIDTH
+import com.example.kttrs.GameConstants.colors
+import com.example.kttrs.GameConstants.shapes
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -14,7 +17,7 @@ import kotlin.random.Random
 
 data class GameState(
     val board: Array<IntArray> = Array(BOARD_HEIGHT) { IntArray(BOARD_WIDTH) },
-    val currentPiece: Piece = randomPiece(),
+    val currentPiece: Piece,
     val score: Int = 0,
     val gameOver: Boolean = false
 ) {
@@ -43,7 +46,7 @@ data class GameState(
 
 class GameViewModel : ViewModel() {
 
-    private val _gameState = MutableStateFlow(GameState())
+    private val _gameState = MutableStateFlow(GameState(currentPiece = randomPiece()))
     val gameState: StateFlow<GameState> = _gameState.asStateFlow()
 
     private var gameJob: Job? = null
@@ -169,14 +172,14 @@ class GameViewModel : ViewModel() {
         }
         return true
     }
-}
 
-fun randomPiece(): Piece {
-    val index = Random.nextInt(shapes.size)
-    return Piece(
-        shape = shapes[index],
-        color = colors[index],
-        x = BOARD_WIDTH / 2 - 1,
-        y = 0
-    )
+    private fun randomPiece(): Piece {
+        val index = Random.nextInt(shapes.size)
+        return Piece(
+            shape = shapes[index],
+            color = colors[index],
+            x = BOARD_WIDTH / 2 - 1,
+            y = 0
+        )
+    }
 }
