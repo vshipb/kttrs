@@ -19,7 +19,9 @@ data class GameState(
     val board: Array<IntArray> = Array(BOARD_HEIGHT) { IntArray(BOARD_WIDTH) },
     val currentPiece: Piece,
     val score: Int = 0,
-    val gameOver: Boolean = false
+    val gameOver: Boolean = false,
+    val linesCleared: Int = 0,
+    val gameSpeed: Long = 500L
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -31,6 +33,8 @@ data class GameState(
         if (currentPiece != other.currentPiece) return false
         if (score != other.score) return false
         if (gameOver != other.gameOver) return false
+        if (linesCleared != other.linesCleared) return false
+        if (gameSpeed != other.gameSpeed) return false
 
         return true
     }
@@ -40,6 +44,8 @@ data class GameState(
         result = 31 * result + currentPiece.hashCode()
         result = 31 * result + score
         result = 31 * result + gameOver.hashCode()
+        result = 31 * result + linesCleared
+        result = 31 * result + gameSpeed.hashCode()
         return result
     }
 }
@@ -59,7 +65,7 @@ class GameViewModel : ViewModel() {
         gameJob?.cancel()
         gameJob = viewModelScope.launch(Dispatchers.Default) {
             while (true) {
-                delay(500)
+                delay(_gameState.value.gameSpeed)
                 if (!_gameState.value.gameOver) {
                     movePiece(0, 1)
                 }
@@ -129,6 +135,8 @@ class GameViewModel : ViewModel() {
 
         val (clearedBoard, linesCleared) = clearLines(newBoard)
         val newScore = _gameState.value.score + linesCleared * 100
+        val newLinesCleared = _gameState.value.linesCleared + linesCleared
+        val newSpeed = 500L - (newLinesCleared / 10) * 50
         val newPiece = randomPiece()
         val isGameOver = !isValidPosition(newPiece, clearedBoard)
 
@@ -136,7 +144,9 @@ class GameViewModel : ViewModel() {
             board = clearedBoard,
             score = newScore,
             currentPiece = newPiece,
-            gameOver = _gameState.value.gameOver || isGameOver
+            gameOver = _gameState.value.gameOver || isGameOver,
+            linesCleared = newLinesCleared,
+            gameSpeed = newSpeed.coerceAtLeast(100L)
         )
     }
 
