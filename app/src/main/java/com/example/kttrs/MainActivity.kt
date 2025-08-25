@@ -22,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.gestures.detectDragGestures
@@ -195,16 +196,25 @@ fun TetrisGame(gameViewModel: GameViewModel = viewModel(factory = GameViewModelF
 
 @Composable
 fun GameBoard(board: Array<IntArray>, piece: Piece, modifier: Modifier = Modifier) {
-    Canvas(modifier = modifier.background(Color.Black)) {
+    Canvas(modifier = modifier.background(Brush.verticalGradient(listOf(Color.DarkGray, Color.Black)))) {
         val cellSize = min(size.width / BOARD_WIDTH, size.height / BOARD_HEIGHT)
         // Draw board
         for (y in board.indices) {
             for (x in board[y].indices) {
                 if (board[y][x] != 0) {
+                    val color = colors[board[y][x] - 1]
                     drawRect(
-                        color = colors[board[y][x] - 1],
+                        brush = Brush.verticalGradient(
+                            colors = listOf(color, color.copy(alpha = 0.5f))
+                        ),
                         topLeft = Offset(x * cellSize, y * cellSize),
                         size = Size(cellSize, cellSize)
+                    )
+                    drawRect(
+                        color = Color.Black.copy(alpha = 0.2f),
+                        topLeft = Offset(x * cellSize, y * cellSize),
+                        size = Size(cellSize, cellSize),
+                        style = androidx.compose.ui.graphics.drawscope.Stroke(width = 4f)
                     )
                 }
             }
@@ -214,9 +224,17 @@ fun GameBoard(board: Array<IntArray>, piece: Piece, modifier: Modifier = Modifie
             for (x in piece.shape[y].indices) {
                 if (piece.shape[y][x] == 1) {
                     drawRect(
-                        color = piece.color,
+                        brush = Brush.verticalGradient(
+                            colors = listOf(piece.color, piece.color.copy(alpha = 0.5f))
+                        ),
                         topLeft = Offset((piece.x + x) * cellSize, (piece.y + y) * cellSize),
                         size = Size(cellSize, cellSize)
+                    )
+                    drawRect(
+                        color = Color.Black.copy(alpha = 0.2f),
+                        topLeft = Offset((piece.x + x) * cellSize, (piece.y + y) * cellSize),
+                        size = Size(cellSize, cellSize),
+                        style = androidx.compose.ui.graphics.drawscope.Stroke(width = 4f)
                     )
                 }
             }
