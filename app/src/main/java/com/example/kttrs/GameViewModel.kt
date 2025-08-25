@@ -1,7 +1,10 @@
 package com.example.kttrs
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.kttrs.data.SettingsDataStore
+import com.example.kttrs.ui.ControlMode
 import com.example.kttrs.GameConstants.BOARD_HEIGHT
 import com.example.kttrs.GameConstants.BOARD_WIDTH
 import com.example.kttrs.GameConstants.colors
@@ -21,7 +24,8 @@ data class GameState(
     val score: Int = 0,
     val gameOver: Boolean = false,
     val linesCleared: Int = 0,
-    val gameSpeed: Long = 500L
+    val gameSpeed: Long = 500L,
+    val controlMode: ControlMode = ControlMode.Buttons
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -35,6 +39,7 @@ data class GameState(
         if (gameOver != other.gameOver) return false
         if (linesCleared != other.linesCleared) return false
         if (gameSpeed != other.gameSpeed) return false
+        if (controlMode != other.controlMode) return false
 
         return true
     }
@@ -46,19 +51,32 @@ data class GameState(
         result = 31 * result + gameOver.hashCode()
         result = 31 * result + linesCleared
         result = 31 * result + gameSpeed.hashCode()
+        result = 31 * result + controlMode.hashCode()
         return result
     }
 }
 
-class GameViewModel : ViewModel() {
+class GameViewModel(application: Application) : AndroidViewModel(application) {
 
+    private val settingsDataStore = SettingsDataStore(application)
     private val _gameState = MutableStateFlow(GameState(currentPiece = randomPiece()))
     val gameState: StateFlow<GameState> = _gameState.asStateFlow()
 
     private var gameJob: Job? = null
 
     init {
+        viewModelScope.launch {
+            settingsDataStore.controlMode.collect {
+                _gameState.value = _gameState.value.copy(controlMode = it)
+            }
+        }
         startGameLoop()
+    }
+
+    fun setControlMode(controlMode: ControlMode) {
+        viewModelScope.launch {
+            settingsDataStore.saveControlMode(controlMode)
+        }
     }
 
     private fun startGameLoop() {
