@@ -4,7 +4,7 @@ import androidx.compose.ui.graphics.Color
 
 object GameConstants {
     const val BOARD_WIDTH = 10
-    const val BOARD_HEIGHT = 20
+    const val BOARD_HEIGHT = 22
 
     val shapes = listOf(
         listOf(listOf(1, 1, 1, 1)), // I
