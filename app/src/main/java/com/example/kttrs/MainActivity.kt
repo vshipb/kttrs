@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.IconButton
@@ -148,10 +149,19 @@ fun TetrisGame(gameViewModel: GameViewModel = viewModel(factory = GameViewModelF
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp),
-                horizontalArrangement = Arrangement.End
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top
             ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("Hold", color = Color.White)
+                    PiecePreview(piece = gameState.heldPiece, modifier = Modifier.size(80.dp))
+                }
                 IconButton(onClick = { showSettings = true }) {
                     Icon(Icons.Filled.Settings, contentDescription = "Settings", tint = Color.White)
+                }
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("Next", color = Color.White)
+                    PiecePreview(piece = gameState.nextPiece, modifier = Modifier.size(80.dp))
                 }
             }
 
@@ -178,6 +188,9 @@ fun TetrisGame(gameViewModel: GameViewModel = viewModel(factory = GameViewModelF
                         OutlinedButton(onClick = { gameViewModel.rotatePiece() }) {
                             Icon(Icons.Filled.Refresh, contentDescription = "Rotate")
                         }
+                        OutlinedButton(onClick = { gameViewModel.holdPiece() }) {
+                            Icon(Icons.Filled.Save, contentDescription = "Hold")
+                        }
                         OutlinedButton(onClick = { gameViewModel.hardDrop() }) {
                             Icon(Icons.Filled.KeyboardArrowUp, contentDescription = "Hard Drop")
                         }
@@ -187,6 +200,36 @@ fun TetrisGame(gameViewModel: GameViewModel = viewModel(factory = GameViewModelF
                     }
                     OutlinedButton(onClick = { gameViewModel.movePiece(0, 1) }) {
                         Icon(Icons.Filled.KeyboardArrowDown, contentDescription = "Down")
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun PiecePreview(piece: Piece?, modifier: Modifier = Modifier) {
+    Box(modifier = modifier) {
+        if (piece != null) {
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                val cellSize = min(size.width / 4, size.height / 4)
+                for (y in piece.shape.indices) {
+                    for (x in piece.shape[y].indices) {
+                        if (piece.shape[y][x] == 1) {
+                            drawRect(
+                                brush = Brush.verticalGradient(
+                                    colors = listOf(piece.color, piece.color.copy(alpha = 0.5f))
+                                ),
+                                topLeft = Offset(x * cellSize, y * cellSize),
+                                size = Size(cellSize, cellSize)
+                            )
+                            drawRect(
+                                color = Color.Black.copy(alpha = 0.2f),
+                                topLeft = Offset(x * cellSize, y * cellSize),
+                                size = Size(cellSize, cellSize),
+                                style = androidx.compose.ui.graphics.drawscope.Stroke(width = 4f)
+                            )
+                        }
                     }
                 }
             }

@@ -21,6 +21,9 @@ import kotlin.random.Random
 data class GameState(
     val board: Array<IntArray> = Array(BOARD_HEIGHT) { IntArray(BOARD_WIDTH) },
     val currentPiece: Piece,
+    val nextPiece: Piece,
+    val heldPiece: Piece? = null,
+    val canHold: Boolean = true,
     val score: Int = 0,
     val gameOver: Boolean = false,
     val linesCleared: Int = 0,
@@ -35,6 +38,9 @@ data class GameState(
 
         if (!board.contentDeepEquals(other.board)) return false
         if (currentPiece != other.currentPiece) return false
+        if (nextPiece != other.nextPiece) return false
+        if (heldPiece != other.heldPiece) return false
+        if (canHold != other.canHold) return false
         if (score != other.score) return false
         if (gameOver != other.gameOver) return false
         if (linesCleared != other.linesCleared) return false
@@ -47,6 +53,9 @@ data class GameState(
     override fun hashCode(): Int {
         var result = board.contentDeepHashCode()
         result = 31 * result + currentPiece.hashCode()
+        result = 31 * result + nextPiece.hashCode()
+        result = 31 * result + (heldPiece?.hashCode() ?: 0)
+        result = 31 * result + canHold.hashCode()
         result = 31 * result + score
         result = 31 * result + gameOver.hashCode()
         result = 31 * result + linesCleared
@@ -59,7 +68,7 @@ data class GameState(
 class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     private val settingsDataStore = SettingsDataStore(application)
-    private val _gameState = MutableStateFlow(GameState(currentPiece = randomPiece()))
+    private val _gameState = MutableStateFlow(GameState(currentPiece = randomPiece(), nextPiece = randomPiece()))
     val gameState: StateFlow<GameState> = _gameState.asStateFlow()
 
     private var gameJob: Job? = null
@@ -99,6 +108,28 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             _gameState.value = _gameState.value.copy(currentPiece = newPiece)
         } else if (dy > 0) {
             placePiece()
+        }
+    }
+
+    fun holdPiece() {
+        if (_gameState.value.gameOver || !_gameState.value.canHold) return
+
+        val currentPiece = _gameState.value.currentPiece
+        val heldPiece = _gameState.value.heldPiece
+
+        if (heldPiece == null) {
+            _gameState.value = _gameState.value.copy(
+                currentPiece = _gameState.value.nextPiece,
+                nextPiece = randomPiece(),
+                heldPiece = currentPiece,
+                canHold = false
+            )
+        } else {
+            _gameState.value = _gameState.value.copy(
+                currentPiece = heldPiece,
+                heldPiece = currentPiece,
+                canHold = false
+            )
         }
     }
 
@@ -172,16 +203,18 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         val newScore = _gameState.value.score + linesCleared * 100
         val newLinesCleared = _gameState.value.linesCleared + linesCleared
         val newSpeed = 500L - (newLinesCleared / 10) * 50
-        val newPiece = randomPiece()
+        val newPiece = _gameState.value.nextPiece
         val isGameOver = !isValidPosition(newPiece, clearedBoard)
 
         _gameState.value = _gameState.value.copy(
             board = clearedBoard,
             score = newScore,
             currentPiece = newPiece,
+            nextPiece = randomPiece(),
             gameOver = _gameState.value.gameOver || isGameOver,
             linesCleared = newLinesCleared,
-            gameSpeed = newSpeed.coerceAtLeast(100L)
+            gameSpeed = newSpeed.coerceAtLeast(100L),
+            canHold = true
         )
     }
 
