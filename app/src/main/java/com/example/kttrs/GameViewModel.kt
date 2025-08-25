@@ -102,6 +102,23 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun hardDrop() {
+        if (_gameState.value.gameOver) return
+
+        var newY = _gameState.value.currentPiece.y
+        while (true) {
+            val nextY = newY + 1
+            val newPiece = _gameState.value.currentPiece.copy(y = nextY)
+            if (isValidPosition(newPiece)) {
+                newY = nextY
+            } else {
+                break
+            }
+        }
+        _gameState.value = _gameState.value.copy(currentPiece = _gameState.value.currentPiece.copy(y = newY))
+        placePiece()
+    }
+
     fun rotatePiece() {
         if (_gameState.value.gameOver) return
 

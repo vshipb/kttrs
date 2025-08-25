@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -123,7 +124,9 @@ fun TetrisGame(gameViewModel: GameViewModel = viewModel(factory = GameViewModelF
                                 gameViewModel.movePiece(-1, 0)
                             }
                         } else {
-                            if (dragDistanceY > 0) {
+                            if (dragDistanceY > 200) { // Hard drop threshold
+                                gameViewModel.hardDrop()
+                            } else if (dragDistanceY > 0) {
                                 gameViewModel.movePiece(0, 1)
                             } else {
                                 gameViewModel.rotatePiece()
@@ -173,6 +176,9 @@ fun TetrisGame(gameViewModel: GameViewModel = viewModel(factory = GameViewModelF
                         }
                         OutlinedButton(onClick = { gameViewModel.rotatePiece() }) {
                             Icon(Icons.Filled.Refresh, contentDescription = "Rotate")
+                        }
+                        OutlinedButton(onClick = { gameViewModel.hardDrop() }) {
+                            Icon(Icons.Filled.KeyboardArrowUp, contentDescription = "Hard Drop")
                         }
                         OutlinedButton(onClick = { gameViewModel.movePiece(1, 0) }) {
                             Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = "Right")
