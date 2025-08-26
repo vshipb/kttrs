@@ -144,7 +144,13 @@ fun TetrisGame(gameViewModel: GameViewModel = viewModel(factory = GameViewModelF
 
         if(gameState.gameOver) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("Game Over", style = MaterialTheme.typography.headlineLarge, color = Color.White)
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("Game Over", style = MaterialTheme.typography.headlineLarge, color = Color.White)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    OutlinedButton(onClick = { gameViewModel.restartGame() }) {
+                        Text("Restart")
+                    }
+                }
             }
         }
 

@@ -82,6 +82,11 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         startGameLoop()
     }
 
+    fun restartGame() {
+        _gameState.value = GameState(currentPiece = randomPiece(), nextPiece = randomPiece())
+        startGameLoop()
+    }
+
     fun setControlMode(controlMode: ControlMode) {
         viewModelScope.launch {
             settingsDataStore.saveControlMode(controlMode)
