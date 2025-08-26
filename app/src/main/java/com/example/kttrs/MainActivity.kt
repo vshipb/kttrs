@@ -191,35 +191,35 @@ fun TetrisGame(gameViewModel: GameViewModel = viewModel(factory = GameViewModelF
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Row {
                             OutlinedButton(onClick = { gameViewModel.rotatePieceLeft() }) {
-                                Icon(Icons.AutoMirrored.Filled.RotateLeft, contentDescription = "Rotate Left")
+                                Icon(Icons.AutoMirrored.Filled.RotateLeft, contentDescription = "Rotate Left", modifier = Modifier.size(48.dp))
                             }
                             Spacer(modifier = Modifier.width(8.dp))
                             OutlinedButton(onClick = { gameViewModel.rotatePieceRight() }) {
-                                Icon(Icons.AutoMirrored.Filled.RotateRight, contentDescription = "Rotate Right")
+                                Icon(Icons.AutoMirrored.Filled.RotateRight, contentDescription = "Rotate Right", modifier = Modifier.size(48.dp))
                             }
                         }
                         Spacer(modifier = Modifier.height(8.dp))
                         Row {
                             OutlinedButton(onClick = { gameViewModel.movePiece(-1, 0) }) {
-                                Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = "Left")
+                                Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = "Left", modifier = Modifier.size(48.dp))
                             }
                             Spacer(modifier = Modifier.width(8.dp))
                             OutlinedButton(onClick = { gameViewModel.movePiece(1, 0) }) {
-                                Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = "Right")
+                                Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = "Right", modifier = Modifier.size(48.dp))
                             }
                         }
                         Spacer(modifier = Modifier.height(8.dp))
                         OutlinedButton(onClick = { gameViewModel.hardDrop() }) {
-                            Icon(Icons.Filled.KeyboardDoubleArrowDown, contentDescription = "Hard Drop")
+                            Icon(Icons.Filled.KeyboardDoubleArrowDown, contentDescription = "Hard Drop", modifier = Modifier.size(48.dp))
                         }
                     }
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         OutlinedButton(onClick = { gameViewModel.holdPiece() }) {
-                            Icon(Icons.AutoMirrored.Filled.CompareArrows, contentDescription = "Hold")
+                            Icon(Icons.AutoMirrored.Filled.CompareArrows, contentDescription = "Hold", modifier = Modifier.size(48.dp))
                         }
                         Spacer(modifier = Modifier.height(8.dp))
                         OutlinedButton(onClick = { gameViewModel.movePiece(0, 1) }) {
-                            Icon(Icons.Filled.KeyboardArrowDown, contentDescription = "Soft Drop")
+                            Icon(Icons.Filled.KeyboardArrowDown, contentDescription = "Soft Drop", modifier = Modifier.size(48.dp))
                         }
                     }
                 }
