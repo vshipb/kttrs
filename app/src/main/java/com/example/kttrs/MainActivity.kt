@@ -10,8 +10,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardDoubleArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.automirrored.filled.RotateLeft
+import androidx.compose.material.icons.automirrored.filled.RotateRight
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -26,7 +28,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.material.icons.filled.Save
+import androidx.compose.material.icons.automirrored.filled.CompareArrows
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.IconButton
@@ -131,7 +133,7 @@ fun TetrisGame(gameViewModel: GameViewModel = viewModel(factory = GameViewModelF
                             } else if (dragDistanceY > 0) {
                                 gameViewModel.movePiece(0, 1)
                             } else {
-                                gameViewModel.rotatePiece()
+                                gameViewModel.rotatePieceRight()
                             }
                         }
                     }
@@ -166,40 +168,46 @@ fun TetrisGame(gameViewModel: GameViewModel = viewModel(factory = GameViewModelF
             }
 
             if (gameState.controlMode != ControlMode.Swipes) {
-                Column(
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color.Black.copy(alpha = 0.5f))
                         .padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.Bottom
                 ) {
-                    if (gameState.gameOver) {
-                        Text("Game Over", style = MaterialTheme.typography.headlineLarge, color = Color.White)
-                    }
-                    Text("Score: ${gameState.score}", style = MaterialTheme.typography.headlineMedium, color = Color.White)
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceEvenly
-                    ) {
-                        OutlinedButton(onClick = { gameViewModel.movePiece(-1, 0) }) {
-                            Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = "Left")
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Row {
+                            OutlinedButton(onClick = { gameViewModel.rotatePieceLeft() }) {
+                                Icon(Icons.AutoMirrored.Filled.RotateLeft, contentDescription = "Rotate Left")
+                            }
+                            Spacer(modifier = Modifier.width(8.dp))
+                            OutlinedButton(onClick = { gameViewModel.rotatePieceRight() }) {
+                                Icon(Icons.AutoMirrored.Filled.RotateRight, contentDescription = "Rotate Right")
+                            }
                         }
-                        OutlinedButton(onClick = { gameViewModel.rotatePiece() }) {
-                            Icon(Icons.Filled.Refresh, contentDescription = "Rotate")
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Row {
+                            OutlinedButton(onClick = { gameViewModel.movePiece(-1, 0) }) {
+                                Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = "Left")
+                            }
+                            Spacer(modifier = Modifier.width(8.dp))
+                            OutlinedButton(onClick = { gameViewModel.movePiece(1, 0) }) {
+                                Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = "Right")
+                            }
                         }
-                        OutlinedButton(onClick = { gameViewModel.holdPiece() }) {
-                            Icon(Icons.Filled.Save, contentDescription = "Hold")
-                        }
+                        Spacer(modifier = Modifier.height(8.dp))
                         OutlinedButton(onClick = { gameViewModel.hardDrop() }) {
-                            Icon(Icons.Filled.KeyboardArrowUp, contentDescription = "Hard Drop")
-                        }
-                        OutlinedButton(onClick = { gameViewModel.movePiece(1, 0) }) {
-                            Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = "Right")
+                            Icon(Icons.Filled.KeyboardDoubleArrowDown, contentDescription = "Hard Drop")
                         }
                     }
-                    OutlinedButton(onClick = { gameViewModel.movePiece(0, 1) }) {
-                        Icon(Icons.Filled.KeyboardArrowDown, contentDescription = "Down")
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        OutlinedButton(onClick = { gameViewModel.holdPiece() }) {
+                            Icon(Icons.AutoMirrored.Filled.CompareArrows, contentDescription = "Hold")
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        OutlinedButton(onClick = { gameViewModel.movePiece(0, 1) }) {
+                            Icon(Icons.Filled.KeyboardArrowDown, contentDescription = "Soft Drop")
+                        }
                     }
                 }
             }

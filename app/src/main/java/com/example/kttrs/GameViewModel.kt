@@ -150,21 +150,32 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         placePiece()
     }
 
-    fun rotatePiece() {
+    fun rotatePieceRight() {
+        rotatePiece(true)
+    }
+
+    fun rotatePieceLeft() {
+        rotatePiece(false)
+    }
+
+    private fun rotatePiece(clockwise: Boolean) {
         if (_gameState.value.gameOver) return
 
-        // Standard 90-degree rotation
         val shape = _gameState.value.currentPiece.shape
-        val newShape = List(shape[0].size) { y ->
-            List(shape.size) { x ->
-                shape[shape.size - 1 - x][y]
+        val newShape = if (clockwise) {
+            List(shape[0].size) { y ->
+                List(shape.size) { x ->
+                    shape[shape.size - 1 - x][y]
+                }
+            }
+        } else {
+            List(shape[0].size) { y ->
+                List(shape.size) { x ->
+                    shape[x][shape[0].size - 1 - y]
+                }
             }
         }
 
-        // Wall kick implementation
-        // Try to move the piece to a valid position after rotation.
-        // This is a simplified version of the Super Rotation System (SRS).
-        // We test the original position (offset 0), then 1 and -1, and finally 2 and -2.
         val testOffsets = listOf(0, 1, -1, 2, -2)
         for (offset in testOffsets) {
             val newPiece = _gameState.value.currentPiece.copy(
@@ -173,7 +184,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             )
             if (isValidPosition(newPiece)) {
                 _gameState.value = _gameState.value.copy(currentPiece = newPiece)
-                return // Rotation successful
+                return
             }
         }
     }
