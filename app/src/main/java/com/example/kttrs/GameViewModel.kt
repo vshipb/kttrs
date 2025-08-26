@@ -238,8 +238,7 @@ class GameViewModel(private val settingsDataStore: SettingsDataStore) : ViewMode
         val newBoard = _gameState.value.board.map { it.clone() }.toTypedArray()
         for (y in _gameState.value.currentPiece.shape.indices) {
             for (x in _gameState.value.currentPiece.shape[y].indices) {
-                if (y + _gameState.value.currentPiece.y >= 0 && y + _gameState.value.currentPiece.y < BOARD_HEIGHT &&
-                    x + _gameState.value.currentPiece.x >= 0 && x + _gameState.value.currentPiece.x < BOARD_WIDTH) {
+                if (_gameState.value.currentPiece.shape[y][x] == 1) {
                     newBoard[_gameState.value.currentPiece.y + y][_gameState.value.currentPiece.x + x] = colors.indexOf(_gameState.value.currentPiece.color) + 1
                 }
             }
