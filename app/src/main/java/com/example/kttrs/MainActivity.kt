@@ -142,6 +142,12 @@ fun TetrisGame(gameViewModel: GameViewModel = viewModel(factory = GameViewModelF
         }) {
         GameBoard(gameState.board, gameState.currentPiece, Modifier.fillMaxSize())
 
+        if(gameState.gameOver) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text("Game Over", style = MaterialTheme.typography.headlineLarge, color = Color.White)
+            }
+        }
+
         Column(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.SpaceBetween,
@@ -154,16 +160,18 @@ fun TetrisGame(gameViewModel: GameViewModel = viewModel(factory = GameViewModelF
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.Top
             ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Hold", color = Color.White)
-                    PiecePreview(piece = gameState.heldPiece, modifier = Modifier.size(80.dp))
+                Column(horizontalAlignment = Alignment.Start) {
+                    IconButton(onClick = { showSettings = true }) {
+                        Icon(Icons.Filled.Settings, contentDescription = "Settings", tint = Color.White)
+                    }
+                    Text("Score: ${gameState.score}", color = Color.White, style = MaterialTheme.typography.headlineMedium)
+                    Text("Lines: ${gameState.linesCleared}", color = Color.White, style = MaterialTheme.typography.headlineMedium)
                 }
-                IconButton(onClick = { showSettings = true }) {
-                    Icon(Icons.Filled.Settings, contentDescription = "Settings", tint = Color.White)
-                }
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Column(horizontalAlignment = Alignment.End) {
                     Text("Next", color = Color.White)
                     PiecePreview(piece = gameState.nextPiece, modifier = Modifier.size(80.dp))
+                    Text("Hold", color = Color.White)
+                    PiecePreview(piece = gameState.heldPiece, modifier = Modifier.size(80.dp))
                 }
             }
 
