@@ -11,7 +11,6 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardDoubleArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.automirrored.filled.RotateLeft
 import androidx.compose.material.icons.automirrored.filled.RotateRight
 import androidx.compose.material3.Icon
@@ -40,7 +39,7 @@ import com.example.kttrs.ui.SettingsScreen
 import kotlin.math.abs
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import android.app.Application
+import com.example.kttrs.data.SettingsDataStore
 import com.example.kttrs.GameConstants.BOARD_HEIGHT
 import com.example.kttrs.GameConstants.BOARD_WIDTH
 import com.example.kttrs.GameConstants.colors
@@ -69,18 +68,18 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-class GameViewModelFactory(private val application: Application) : ViewModelProvider.Factory {
+class GameViewModelFactory(private val settingsDataStore: SettingsDataStore) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(GameViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return GameViewModel(application) as T
+            return GameViewModel(settingsDataStore) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }
 }
 
 @Composable
-fun TetrisGame(gameViewModel: GameViewModel = viewModel(factory = GameViewModelFactory(LocalContext.current.applicationContext as Application))) {
+fun TetrisGame(gameViewModel: GameViewModel = viewModel(factory = GameViewModelFactory(SettingsDataStore(LocalContext.current)))) {
     val gameState by gameViewModel.gameState.collectAsState()
     var showSettings by remember { mutableStateOf(false) }
 

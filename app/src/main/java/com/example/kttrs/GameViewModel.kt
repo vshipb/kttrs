@@ -1,7 +1,7 @@
 package com.example.kttrs
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
+import androidx.annotation.VisibleForTesting
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.kttrs.data.SettingsDataStore
 import com.example.kttrs.ui.ControlMode
@@ -65,9 +65,8 @@ data class GameState(
     }
 }
 
-class GameViewModel(application: Application) : AndroidViewModel(application) {
+class GameViewModel(private val settingsDataStore: SettingsDataStore) : ViewModel() {
 
-    private val settingsDataStore = SettingsDataStore(application)
     private val _gameState = MutableStateFlow(GameState(currentPiece = randomPiece(), nextPiece = randomPiece()))
     val gameState: StateFlow<GameState> = _gameState.asStateFlow()
 
@@ -85,6 +84,11 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     fun restartGame() {
         _gameState.value = GameState(currentPiece = randomPiece(), nextPiece = randomPiece())
         startGameLoop()
+    }
+
+    @VisibleForTesting
+    fun setGameStateForTest(gameState: GameState) {
+        _gameState.value = gameState
     }
 
     fun setControlMode(controlMode: ControlMode) {
