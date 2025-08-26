@@ -167,7 +167,8 @@ class GameViewModel(private val settingsDataStore: SettingsDataStore) : ViewMode
         rotatePiece(false)
     }
 
-    private fun rotatePiece(clockwise: Boolean) {
+    @VisibleForTesting
+    internal fun rotatePiece(clockwise: Boolean) {
         if (_gameState.value.gameOver) return
 
         val shape = _gameState.value.currentPiece.shape
@@ -198,7 +199,8 @@ class GameViewModel(private val settingsDataStore: SettingsDataStore) : ViewMode
         }
     }
 
-    private fun placePiece() {
+    @VisibleForTesting
+    internal fun placePiece() {
         for (y in _gameState.value.currentPiece.shape.indices) {
             for (x in _gameState.value.currentPiece.shape[y].indices) {
                 if (_gameState.value.currentPiece.shape[y][x] == 1) {
@@ -238,22 +240,25 @@ class GameViewModel(private val settingsDataStore: SettingsDataStore) : ViewMode
         )
     }
 
-    private fun clearLines(board: Array<IntArray>): Pair<Array<IntArray>, Int> {
-        val newBoard = board.toMutableList()
+    @VisibleForTesting
+    internal fun clearLines(board: Array<IntArray>): Pair<Array<IntArray>, Int> {
+        val newBoardRows = mutableListOf<IntArray>()
         var linesCleared = 0
-        for (y in board.indices.reversed()) {
+        for (y in board.indices) {
             if (board[y].all { it != 0 }) {
-                newBoard.removeAt(y)
                 linesCleared++
+            } else {
+                newBoardRows.add(board[y])
             }
         }
         repeat(linesCleared) {
-            newBoard.add(0, IntArray(BOARD_WIDTH))
+            newBoardRows.add(0, IntArray(BOARD_WIDTH))
         }
-        return Pair(newBoard.toTypedArray(), linesCleared)
+        return Pair(newBoardRows.toTypedArray(), linesCleared)
     }
 
-    private fun isValidPosition(piece: Piece, board: Array<IntArray> = _gameState.value.board): Boolean {
+    @VisibleForTesting
+    internal fun isValidPosition(piece: Piece, board: Array<IntArray> = _gameState.value.board): Boolean {
         for (y in piece.shape.indices) {
             for (x in piece.shape[y].indices) {
                 if (piece.shape[y][x] == 1) {
