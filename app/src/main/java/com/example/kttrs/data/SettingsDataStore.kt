@@ -4,6 +4,7 @@ package com.example.kttrs.data
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -19,6 +20,7 @@ class SettingsDataStore(context: Context) {
 
     private object PreferencesKeys {
         val CONTROL_MODE = stringPreferencesKey("control_mode")
+        val SHOW_GHOST_PIECE = booleanPreferencesKey("show_ghost_piece")
     }
 
     val controlMode: Flow<ControlMode> = dataStore.data
@@ -27,9 +29,20 @@ class SettingsDataStore(context: Context) {
             ControlMode.valueOf(controlModeName)
         }
 
+    val showGhostPiece: Flow<Boolean> = dataStore.data
+        .map { preferences ->
+            preferences[PreferencesKeys.SHOW_GHOST_PIECE] ?: true
+        }
+
     suspend fun saveControlMode(controlMode: ControlMode) {
         dataStore.edit {
             it[PreferencesKeys.CONTROL_MODE] = controlMode.name
+        }
+    }
+
+    suspend fun saveShowGhostPiece(show: Boolean) {
+        dataStore.edit {
+            it[PreferencesKeys.SHOW_GHOST_PIECE] = show
         }
     }
 }

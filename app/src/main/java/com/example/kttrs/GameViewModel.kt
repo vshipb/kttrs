@@ -15,6 +15,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlin.random.Random
 
@@ -28,7 +31,8 @@ data class GameState(
     val gameOver: Boolean = false,
     val linesCleared: Int = 0,
     val gameSpeed: Long = 500L,
-    val controlMode: ControlMode = ControlMode.Buttons
+    val controlMode: ControlMode = ControlMode.Buttons,
+    val ghostPiece: Piece? = null
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -46,6 +50,7 @@ data class GameState(
         if (linesCleared != other.linesCleared) return false
         if (gameSpeed != other.gameSpeed) return false
         if (controlMode != other.controlMode) return false
+        if (ghostPiece != other.ghostPiece) return false
 
         return true
     }
@@ -61,6 +66,7 @@ data class GameState(
         result = 31 * result + linesCleared
         result = 31 * result + gameSpeed.hashCode()
         result = 31 * result + controlMode.hashCode()
+        result = 31 * result + (ghostPiece?.hashCode() ?: 0)
         return result
     }
 }
@@ -70,12 +76,23 @@ class GameViewModel(private val settingsDataStore: SettingsDataStore) : ViewMode
     private val _gameState = MutableStateFlow(GameState(currentPiece = randomPiece(), nextPiece = randomPiece()))
     val gameState: StateFlow<GameState> = _gameState.asStateFlow()
 
+    val showGhostPiece: StateFlow<Boolean> = settingsDataStore.showGhostPiece.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = true
+    )
+
     private var gameJob: Job? = null
 
     init {
         viewModelScope.launch {
             settingsDataStore.controlMode.collect {
                 _gameState.value = _gameState.value.copy(controlMode = it)
+            }
+        }
+        viewModelScope.launch {
+            _gameState.collectLatest { gameState ->
+                _gameState.value = gameState.copy(ghostPiece = calculateGhostPiecePosition(gameState.currentPiece, gameState.board))
             }
         }
         startGameLoop()
@@ -94,6 +111,12 @@ class GameViewModel(private val settingsDataStore: SettingsDataStore) : ViewMode
     fun setControlMode(controlMode: ControlMode) {
         viewModelScope.launch {
             settingsDataStore.saveControlMode(controlMode)
+        }
+    }
+
+    fun saveShowGhostPiece(show: Boolean) {
+        viewModelScope.launch {
+            settingsDataStore.saveShowGhostPiece(show)
         }
     }
 
@@ -215,7 +238,8 @@ class GameViewModel(private val settingsDataStore: SettingsDataStore) : ViewMode
         val newBoard = _gameState.value.board.map { it.clone() }.toTypedArray()
         for (y in _gameState.value.currentPiece.shape.indices) {
             for (x in _gameState.value.currentPiece.shape[y].indices) {
-                if (_gameState.value.currentPiece.shape[y][x] == 1) {
+                if (y + _gameState.value.currentPiece.y >= 0 && y + _gameState.value.currentPiece.y < BOARD_HEIGHT &&
+                    x + _gameState.value.currentPiece.x >= 0 && x + _gameState.value.currentPiece.x < BOARD_WIDTH) {
                     newBoard[_gameState.value.currentPiece.y + y][_gameState.value.currentPiece.x + x] = colors.indexOf(_gameState.value.currentPiece.color) + 1
                 }
             }
@@ -284,5 +308,18 @@ class GameViewModel(private val settingsDataStore: SettingsDataStore) : ViewMode
             x = BOARD_WIDTH / 2 - 1,
             y = 0
         )
+    }
+
+    private fun calculateGhostPiecePosition(currentPiece: Piece, board: Array<IntArray>): Piece {
+        var ghostY = currentPiece.y
+        while (true) {
+            val newPiece = currentPiece.copy(y = ghostY + 1)
+            if (isValidPosition(newPiece, board)) {
+                ghostY++
+            } else {
+                break
+            }
+        }
+        return currentPiece.copy(y = ghostY)
     }
 }

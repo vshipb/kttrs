@@ -14,6 +14,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.material3.Switch
 
 enum class ControlMode {
     Buttons,
@@ -24,9 +25,12 @@ enum class ControlMode {
 @Composable
 fun SettingsScreen(
     currentControlMode: ControlMode,
-    onControlModeChange: (ControlMode) -> Unit
+    onControlModeChange: (ControlMode) -> Unit,
+    showGhostPiece: Boolean,
+    onShowGhostPieceChange: (Boolean) -> Unit
 ) {
     val selectedOption = remember { mutableStateOf(currentControlMode) }
+    val ghostPieceChecked = remember { mutableStateOf(showGhostPiece) }
 
     Column(modifier = Modifier.padding(16.dp)) {
         Text("Control Mode", style = MaterialTheme.typography.headlineSmall)
@@ -49,6 +53,25 @@ fun SettingsScreen(
                     modifier = Modifier.padding(start = 8.dp)
                 )
             }
+        }
+
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Show Ghost Piece",
+                modifier = Modifier.weight(1f)
+            )
+            Switch(
+                checked = ghostPieceChecked.value,
+                onCheckedChange = {
+                    ghostPieceChecked.value = it
+                    onShowGhostPieceChange(it)
+                }
+            )
         }
     }
 }
