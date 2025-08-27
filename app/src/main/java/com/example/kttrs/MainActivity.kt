@@ -338,14 +338,16 @@ fun GameBoard(
             }
         }
         // Draw current piece
-        for (y in currentPiece.shape.indices) {
-            for (x in currentPiece.shape[y].indices) {
-                if (currentPiece.shape[y][x] == 1) {
-                    drawImage(
-                        image = currentPieceImageBitmap,
-                        dstOffset = IntOffset(((currentPiece.x + x) * cellSize).toInt(), ((currentPiece.y + y) * cellSize).toInt()),
-                        dstSize = IntSize(cellSizeInt, cellSizeInt)
-                    )
+        if (clearingLines.isEmpty()) {
+            for (y in currentPiece.shape.indices) {
+                for (x in currentPiece.shape[y].indices) {
+                    if (currentPiece.shape[y][x] == 1) {
+                        drawImage(
+                            image = currentPieceImageBitmap,
+                            dstOffset = IntOffset(((currentPiece.x + x) * cellSize).toInt(), ((currentPiece.y + y) * cellSize).toInt()),
+                            dstSize = IntSize(cellSizeInt, cellSizeInt)
+                        )
+                    }
                 }
             }
         }
