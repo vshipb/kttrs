@@ -7,9 +7,7 @@ import com.example.kttrs.data.SettingsDataStore
 import com.example.kttrs.ui.ControlMode
 import com.example.kttrs.GameConstants.BOARD_HEIGHT
 import com.example.kttrs.GameConstants.BOARD_WIDTH
-import com.example.kttrs.GameConstants.colors
-import com.example.kttrs.GameConstants.shapes
-import com.example.kttrs.GameConstants.drawableResIds
+import com.example.kttrs.GameConstants.pieceInfos
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -20,7 +18,6 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlin.random.Random
 
 data class GameState(
     val board: Array<IntArray> = Array(BOARD_HEIGHT) { IntArray(BOARD_WIDTH) },
@@ -243,7 +240,10 @@ class GameViewModel(private val settingsDataStore: SettingsDataStore) : ViewMode
         for (y in _gameState.value.currentPiece.shape.indices) {
             for (x in _gameState.value.currentPiece.shape[y].indices) {
                 if (_gameState.value.currentPiece.shape[y][x] == 1) {
-                    newBoard[_gameState.value.currentPiece.y + y][_gameState.value.currentPiece.x + x] = colors.indexOf(_gameState.value.currentPiece.color) + 1
+                    val pieceIndex = pieceInfos.indexOfFirst { it.drawableResId == _gameState.value.currentPiece.drawableResId }
+                    if (pieceIndex != -1) {
+                        newBoard[_gameState.value.currentPiece.y + y][_gameState.value.currentPiece.x + x] = pieceIndex + 1
+                    }
                 }
             }
         }
@@ -324,13 +324,12 @@ class GameViewModel(private val settingsDataStore: SettingsDataStore) : ViewMode
     }
 
     private fun randomPiece(): Piece {
-        val index = Random.nextInt(shapes.size)
+        val pieceInfo = pieceInfos.random()
         return Piece(
-            shape = shapes[index],
-            color = colors[index],
+            shape = pieceInfo.shape,
             x = BOARD_WIDTH / 2 - 1,
             y = 0,
-            drawableResId = drawableResIds[index]
+            drawableResId = pieceInfo.drawableResId
         )
     }
 

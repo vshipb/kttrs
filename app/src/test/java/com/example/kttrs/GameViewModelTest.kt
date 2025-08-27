@@ -2,9 +2,8 @@ package com.example.kttrs
 
 import com.example.kttrs.GameConstants.BOARD_HEIGHT
 import com.example.kttrs.GameConstants.BOARD_WIDTH
-import com.example.kttrs.GameConstants.colors
+import com.example.kttrs.GameConstants.pieceInfos
 
-import androidx.compose.ui.graphics.Color
 import com.example.kttrs.data.SettingsDataStore
 import com.example.kttrs.ui.ControlMode
 import kotlinx.coroutines.Dispatchers
@@ -57,7 +56,7 @@ class GameViewModelTest {
 
     @Test
     fun `movePiece should not move the current piece if it would go out of bounds`() = runTest {
-        val initialPiece = Piece(listOf(listOf(1)), Color.Red, 0, 0)
+        val initialPiece = Piece(listOf(listOf(1)), 0, 0)
         val gameState = viewModel.gameState.value.copy(currentPiece = initialPiece)
         viewModel.setGameStateForTest(gameState)
 
@@ -70,13 +69,13 @@ class GameViewModelTest {
     @Test
     fun `restartGame should reset the game state`() = runTest {
         // Change some state to ensure it resets
-        val initialPiece = Piece(listOf(listOf(1)), Color.Red, 5, 5)
+        val initialPiece = Piece(listOf(listOf(1)), 5, 5)
         val initialBoard = Array(BOARD_HEIGHT) { IntArray(BOARD_WIDTH) }
         initialBoard[0][0] = 1 // Place something on the board
         val gameState = GameState(
             board = initialBoard,
             currentPiece = initialPiece,
-            nextPiece = Piece(listOf(listOf(1)), Color.Blue, 0, 0),
+            nextPiece = Piece(listOf(listOf(1)), 0, 0),
             score = 100,
             gameOver = true,
             linesCleared = 10
@@ -94,13 +93,13 @@ class GameViewModelTest {
         // Current piece and next piece should be new random pieces, so we can't assert their exact values,
         // but we can assert they are not null and are valid pieces.
         assertEquals(false, newState.currentPiece == initialPiece)
-        assertEquals(false, newState.nextPiece == Piece(listOf(listOf(1)), Color.Blue, 0, 0))
+        assertEquals(false, newState.nextPiece == Piece(listOf(listOf(1)), 0, 0))
     }
 
     @Test
     fun `holdPiece should swap current piece with held piece when held piece is null`() = runTest {
-        val initialCurrentPiece = Piece(listOf(listOf(1)), Color.Red, 0, 0)
-        val initialNextPiece = Piece(listOf(listOf(1)), Color.Blue, 0, 0)
+        val initialCurrentPiece = Piece(listOf(listOf(1)), 0, 0)
+        val initialNextPiece = Piece(listOf(listOf(1)), 0, 0)
         val gameState = viewModel.gameState.value.copy(
             currentPiece = initialCurrentPiece,
             nextPiece = initialNextPiece,
@@ -119,9 +118,9 @@ class GameViewModelTest {
 
     @Test
     fun `holdPiece should swap current piece with held piece when held piece is not null`() = runTest {
-        val initialCurrentPiece = Piece(listOf(listOf(1)), Color.Red, 0, 0)
-        val initialNextPiece = Piece(listOf(listOf(1)), Color.Blue, 0, 0)
-        val initialHeldPiece = Piece(listOf(listOf(1)), Color.Green, 0, 0)
+        val initialCurrentPiece = Piece(listOf(listOf(1)), 0, 0)
+        val initialNextPiece = Piece(listOf(listOf(1)), 0, 0)
+        val initialHeldPiece = Piece(listOf(listOf(1)), 0, 0)
         val gameState = viewModel.gameState.value.copy(
             currentPiece = initialCurrentPiece,
             nextPiece = initialNextPiece,
@@ -140,9 +139,9 @@ class GameViewModelTest {
 
     @Test
     fun `holdPiece should not do anything if canHold is false`() = runTest {
-        val initialCurrentPiece = Piece(listOf(listOf(1)), Color.Red, 0, 0)
-        val initialNextPiece = Piece(listOf(listOf(1)), Color.Blue, 0, 0)
-        val initialHeldPiece = Piece(listOf(listOf(1)), Color.Green, 0, 0)
+        val initialCurrentPiece = Piece(listOf(listOf(1)), 0, 0)
+        val initialNextPiece = Piece(listOf(listOf(1)), 0, 0)
+        val initialHeldPiece = Piece(listOf(listOf(1)), 0, 0)
         val gameState = viewModel.gameState.value.copy(
             currentPiece = initialCurrentPiece,
             nextPiece = initialNextPiece,
@@ -161,8 +160,8 @@ class GameViewModelTest {
 
     @Test
     fun `hardDrop should drop the piece to the bottom and place it`() = runTest {
-        val initialPiece = Piece(listOf(listOf(1)), Color.Red, 0, 0)
-        val initialNextPiece = Piece(listOf(listOf(1)), Color.Blue, 0, 0)
+        val initialPiece = Piece(listOf(listOf(1)), 0, 0, R.drawable.block_i)
+        val initialNextPiece = Piece(listOf(listOf(1)), 0, 0)
         val gameState = viewModel.gameState.value.copy(
             currentPiece = initialPiece
         )
@@ -174,7 +173,8 @@ class GameViewModelTest {
         val newState = viewModel.gameState.value
 
         // Verify the initialPiece is placed on the board at the bottom
-        assertEquals(colors.indexOf(initialPiece.color) + 1, newState.board[BOARD_HEIGHT - 1][0]) // Assuming 1x1 piece at (0,0) lands at (0, BOARD_HEIGHT-1)
+        val pieceIndex = pieceInfos.indexOfFirst { it.drawableResId == initialPiece.drawableResId }
+        assertEquals(pieceIndex + 1, newState.board[BOARD_HEIGHT - 1][0]) // Assuming 1x1 piece at (0,0) lands at (0, BOARD_HEIGHT-1)
         assertEquals(false, newState.gameOver)
 
         // Verify a new piece has spawned (currentPiece is not the initial one)
@@ -185,7 +185,7 @@ class GameViewModelTest {
 
     @Test
     fun `hardDrop newY calculation should be correct`() = runTest {
-        val initialPiece = Piece(listOf(listOf(1)), Color.Red, 0, 0)
+        val initialPiece = Piece(listOf(listOf(1)), 0, 0)
         val initialBoard = Array(BOARD_HEIGHT) { IntArray(BOARD_WIDTH) }
 
         var newY = initialPiece.y
@@ -205,7 +205,7 @@ class GameViewModelTest {
     fun `rotatePieceRight should rotate the piece clockwise`() = runTest {
         // A 2x2 block (square) should not change shape when rotated
         val squareShape = listOf(listOf(1, 1), listOf(1, 1))
-        val initialPiece = Piece(squareShape, Color.Red, 0, 0)
+        val initialPiece = Piece(squareShape, 0, 0)
         val gameState = viewModel.gameState.value.copy(currentPiece = initialPiece)
         viewModel.setGameStateForTest(gameState)
 
@@ -225,7 +225,7 @@ class GameViewModelTest {
             listOf(1, 0, 0),
             listOf(0, 0, 0)
         )
-        val lPiece = Piece(lShape, Color.Blue, 0, 0)
+        val lPiece = Piece(lShape, 0, 0)
         viewModel.setGameStateForTest(viewModel.gameState.value.copy(currentPiece = lPiece))
 
         viewModel.rotatePieceRight()
@@ -238,7 +238,7 @@ class GameViewModelTest {
     fun `rotatePieceLeft should rotate the piece counter-clockwise`() = runTest {
         // A 2x2 block (square) should not change shape when rotated
         val squareShape = listOf(listOf(1, 1), listOf(1, 1))
-        val initialPiece = Piece(squareShape, Color.Red, 0, 0)
+        val initialPiece = Piece(squareShape, 0, 0)
         val gameState = viewModel.gameState.value.copy(currentPiece = initialPiece)
         viewModel.setGameStateForTest(gameState)
 
@@ -253,7 +253,7 @@ class GameViewModelTest {
     @Test
     fun `placePiece should place the current piece on the board`() = runTest {
         val initialBoard = Array(BOARD_HEIGHT) { IntArray(BOARD_WIDTH) }
-        val pieceToPlace = Piece(listOf(listOf(1)), Color.Red, 0, BOARD_HEIGHT - 1) // Place at bottom
+        val pieceToPlace = Piece(listOf(listOf(1)), 0, BOARD_HEIGHT - 1, R.drawable.block_i) // Place at bottom
 
         val gameState = viewModel.gameState.value.copy(
             board = initialBoard,
@@ -270,12 +270,13 @@ class GameViewModelTest {
         val newState = viewModel.gameState.value
 
         // Assert the piece is on the board
-        assertEquals(colors.indexOf(pieceToPlace.color) + 1, newState.board[BOARD_HEIGHT - 1][0]) // Piece placed at bottom
+        val pieceIndex = pieceInfos.indexOfFirst { it.drawableResId == pieceToPlace.drawableResId }
+        assertEquals(pieceIndex + 1, newState.board[BOARD_HEIGHT - 1][0]) // Piece placed at bottom
     }
 
     @Test
     fun `isValidPosition should return true for a valid position`() = runTest {
-        val piece = Piece(listOf(listOf(1)), Color.Red, 0, 0)
+        val piece = Piece(listOf(listOf(1)), 0, 0)
         val board = Array(BOARD_HEIGHT) { IntArray(BOARD_WIDTH) }
         val result = viewModel.isValidPosition(piece, board)
         assertEquals(true, result)
@@ -283,7 +284,7 @@ class GameViewModelTest {
 
     @Test
     fun `isValidPosition should return false if piece is out of bounds (left)`() = runTest {
-        val piece = Piece(listOf(listOf(1)), Color.Red, -1, 0)
+        val piece = Piece(listOf(listOf(1)), -1, 0)
         val board = Array(BOARD_HEIGHT) { IntArray(BOARD_WIDTH) }
         val result = viewModel.isValidPosition(piece, board)
         assertEquals(false, result)
@@ -291,7 +292,7 @@ class GameViewModelTest {
 
     @Test
     fun `isValidPosition should return false if piece is out of bounds (right)`() = runTest {
-        val piece = Piece(listOf(listOf(1)), Color.Red, BOARD_WIDTH, 0)
+        val piece = Piece(listOf(listOf(1)), BOARD_WIDTH, 0)
         val board = Array(BOARD_HEIGHT) { IntArray(BOARD_WIDTH) }
         val result = viewModel.isValidPosition(piece, board)
         assertEquals(false, result)
@@ -299,7 +300,7 @@ class GameViewModelTest {
 
     @Test
     fun `isValidPosition should return false if piece is out of bounds (bottom)`() = runTest {
-        val piece = Piece(listOf(listOf(1)), Color.Red, 0, BOARD_HEIGHT)
+        val piece = Piece(listOf(listOf(1)), 0, BOARD_HEIGHT)
         val board = Array(BOARD_HEIGHT) { IntArray(BOARD_WIDTH) }
         val result = viewModel.isValidPosition(piece, board)
         assertEquals(false, result)
@@ -307,7 +308,7 @@ class GameViewModelTest {
 
     @Test
     fun `isValidPosition should return false if piece overlaps with existing blocks`() = runTest {
-        val piece = Piece(listOf(listOf(1)), Color.Red, 0, 0)
+        val piece = Piece(listOf(listOf(1)), 0, 0)
         val board = Array(BOARD_HEIGHT) { IntArray(BOARD_WIDTH) }
         board[0][0] = 1 // Place a block at (0,0)
         val result = viewModel.isValidPosition(piece, board)
@@ -335,7 +336,7 @@ class GameViewModelTest {
         for (x in 0 until BOARD_WIDTH) {
             initialBoard[BOARD_HEIGHT - 1][x] = 1
         }
-        val pieceToPlace = Piece(listOf(listOf(1)), Color.Red, 0, 0)
+        val pieceToPlace = Piece(listOf(listOf(1)), 0, 0)
 
         val gameState = viewModel.gameState.value.copy(
             board = initialBoard,

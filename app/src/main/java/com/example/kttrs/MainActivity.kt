@@ -24,7 +24,6 @@ import androidx.compose.ui.Modifier
 
 
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -44,23 +43,13 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.kttrs.data.SettingsDataStore
 import com.example.kttrs.GameConstants.BOARD_HEIGHT
 import com.example.kttrs.GameConstants.BOARD_WIDTH
-import com.example.kttrs.GameConstants.colors
-import com.example.kttrs.GameConstants.drawableResIds
+import com.example.kttrs.GameConstants.pieceInfos
 import kotlin.math.min
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
-
-data class Piece(
-    val shape: List<List<Int>> = emptyList(),
-    val color: Color = Color.Transparent,
-    val x: Int = 0,
-    val y: Int = 0,
-    val drawableResId: Int = 0
-)
-
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -288,8 +277,8 @@ fun GameBoard(
 ) {
     val context = LocalContext.current
     // Load ImageBitmaps outside Canvas scope
-    val blockImages = remember(drawableResIds) {
-        drawableResIds.map { ImageBitmap.imageResource(context.resources, it) }
+    val blockImages = remember(pieceInfos) {
+        pieceInfos.map { ImageBitmap.imageResource(context.resources, it.drawableResId) }
     }
     val currentPieceImageBitmap = remember(currentPiece.drawableResId) {
         ImageBitmap.imageResource(context.resources, currentPiece.drawableResId)
