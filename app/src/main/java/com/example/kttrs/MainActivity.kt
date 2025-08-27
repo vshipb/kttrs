@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 
 
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -153,7 +154,14 @@ fun TetrisGame(gameViewModel: GameViewModel = viewModel(factory = GameViewModelF
                 )
             }
         }) {
-        GameBoard(gameState.board, gameState.currentPiece, gameState.ghostPiece, showGhostPiece, Modifier.fillMaxSize())
+        GameBoard(
+    board = gameState.board,
+    currentPiece = gameState.currentPiece,
+    ghostPiece = gameState.ghostPiece,
+    showGhostPiece = showGhostPiece,
+    clearingLines = gameState.clearingLines, // Add this
+    modifier = Modifier.fillMaxSize()
+)
 
         if(gameState.gameOver) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -270,7 +278,14 @@ fun PiecePreview(piece: Piece?, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun GameBoard(board: Array<IntArray>, currentPiece: Piece, ghostPiece: Piece?, showGhostPiece: Boolean, modifier: Modifier = Modifier) {
+fun GameBoard(
+    board: Array<IntArray>,
+    currentPiece: Piece,
+    ghostPiece: Piece?,
+    showGhostPiece: Boolean,
+    clearingLines: List<Int>,
+    modifier: Modifier = Modifier
+) {
     val context = LocalContext.current
     // Load ImageBitmaps outside Canvas scope
     val blockImages = remember(drawableResIds) {
@@ -290,12 +305,20 @@ fun GameBoard(board: Array<IntArray>, currentPiece: Piece, ghostPiece: Piece?, s
         for (y in board.indices) {
             for (x in board[y].indices) {
                 if (board[y][x] != 0) {
-                    val imageBitmap = blockImages[board[y][x] - 1]
-                    drawImage(
-                        image = imageBitmap,
-                        dstOffset = IntOffset((x * cellSize).toInt(), (y * cellSize).toInt()),
-                        dstSize = IntSize(cellSizeInt, cellSizeInt)
-                    )
+                    if (clearingLines.contains(y)) {
+                        drawRect(
+                            color = Color.White,
+                            topLeft = Offset(x * cellSize, y * cellSize),
+                            size = androidx.compose.ui.geometry.Size(cellSize, cellSize)
+                        )
+                    } else {
+                        val imageBitmap = blockImages[board[y][x] - 1]
+                        drawImage(
+                            image = imageBitmap,
+                            dstOffset = IntOffset((x * cellSize).toInt(), (y * cellSize).toInt()),
+                            dstSize = IntSize(cellSizeInt, cellSizeInt)
+                        )
+                    }
                 }
             }
         }

@@ -33,7 +33,8 @@ data class GameState(
     val linesCleared: Int = 0,
     val gameSpeed: Long = 500L,
     val controlMode: ControlMode = ControlMode.Buttons,
-    val ghostPiece: Piece? = null
+    val ghostPiece: Piece? = null,
+    val clearingLines: List<Int> = emptyList()
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -52,6 +53,7 @@ data class GameState(
         if (gameSpeed != other.gameSpeed) return false
         if (controlMode != other.controlMode) return false
         if (ghostPiece != other.ghostPiece) return false
+        if (clearingLines != other.clearingLines) return false
 
         return true
     }
@@ -68,6 +70,7 @@ data class GameState(
         result = 31 * result + gameSpeed.hashCode()
         result = 31 * result + controlMode.hashCode()
         result = 31 * result + (ghostPiece?.hashCode() ?: 0)
+        result = 31 * result + clearingLines.hashCode()
         return result
     }
 }
@@ -245,40 +248,60 @@ class GameViewModel(private val settingsDataStore: SettingsDataStore) : ViewMode
             }
         }
 
-        val (clearedBoard, linesCleared) = clearLines(newBoard)
-        val newScore = _gameState.value.score + linesCleared * 100
-        val newLinesCleared = _gameState.value.linesCleared + linesCleared
-        val newSpeed = 500L - (newLinesCleared / 10) * 50
-        val newPiece = _gameState.value.nextPiece
-        val isGameOver = !isValidPosition(newPiece, clearedBoard)
+        val clearedLinesIndices = getClearedLines(newBoard)
 
-        _gameState.value = _gameState.value.copy(
-            board = clearedBoard,
-            score = newScore,
-            currentPiece = newPiece,
-            nextPiece = randomPiece(),
-            gameOver = _gameState.value.gameOver || isGameOver,
-            linesCleared = newLinesCleared,
-            gameSpeed = newSpeed.coerceAtLeast(100L),
-            canHold = true
-        )
+        if (clearedLinesIndices.isNotEmpty()) {
+            viewModelScope.launch {
+                _gameState.value = _gameState.value.copy(
+                    board = newBoard,
+                    clearingLines = clearedLinesIndices
+                )
+                delay(200)
+
+                val boardAfterClearing = newBoard.filterIndexed { index, _ -> !clearedLinesIndices.contains(index) }.toTypedArray()
+                val newRows = Array(clearedLinesIndices.size) { IntArray(BOARD_WIDTH) }
+                val finalBoard = newRows + boardAfterClearing
+
+                val newScore = _gameState.value.score + clearedLinesIndices.size * 100
+                val newLinesCleared = _gameState.value.linesCleared + clearedLinesIndices.size
+                val newSpeed = 500L - (newLinesCleared / 10) * 50
+                val newPiece = _gameState.value.nextPiece
+                val isGameOver = !isValidPosition(newPiece, finalBoard)
+
+                _gameState.value = _gameState.value.copy(
+                    board = finalBoard,
+                    score = newScore,
+                    currentPiece = newPiece,
+                    nextPiece = randomPiece(),
+                    gameOver = _gameState.value.gameOver || isGameOver,
+                    linesCleared = newLinesCleared,
+                    gameSpeed = newSpeed.coerceAtLeast(100L),
+                    canHold = true,
+                    clearingLines = emptyList()
+                )
+            }
+        } else {
+            val newPiece = _gameState.value.nextPiece
+            val isGameOver = !isValidPosition(newPiece, newBoard)
+            _gameState.value = _gameState.value.copy(
+                board = newBoard,
+                currentPiece = newPiece,
+                nextPiece = randomPiece(),
+                gameOver = _gameState.value.gameOver || isGameOver,
+                canHold = true
+            )
+        }
     }
 
     @VisibleForTesting
-    internal fun clearLines(board: Array<IntArray>): Pair<Array<IntArray>, Int> {
-        val newBoardRows = mutableListOf<IntArray>()
-        var linesCleared = 0
+    internal fun getClearedLines(board: Array<IntArray>): List<Int> {
+        val clearedLinesIndices = mutableListOf<Int>()
         for (y in board.indices) {
             if (board[y].all { it != 0 }) {
-                linesCleared++
-            } else {
-                newBoardRows.add(board[y])
+                clearedLinesIndices.add(y)
             }
         }
-        repeat(linesCleared) {
-            newBoardRows.add(0, IntArray(BOARD_WIDTH))
-        }
-        return Pair(newBoardRows.toTypedArray(), linesCleared)
+        return clearedLinesIndices
     }
 
     @VisibleForTesting

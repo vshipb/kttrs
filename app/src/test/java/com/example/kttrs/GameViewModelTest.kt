@@ -1,4 +1,3 @@
-
 package com.example.kttrs
 
 import com.example.kttrs.GameConstants.BOARD_HEIGHT
@@ -36,6 +35,7 @@ class GameViewModelTest {
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
         whenever(settingsDataStore.controlMode).thenReturn(flowOf(ControlMode.Buttons))
+        whenever(settingsDataStore.showGhostPiece).thenReturn(flowOf(true))
         viewModel = GameViewModel(settingsDataStore)
     }
 
@@ -169,7 +169,7 @@ class GameViewModelTest {
         viewModel.setGameStateForTest(gameState)
 
         viewModel.hardDrop()
-        viewModel.setGameStateForTest(viewModel.gameState.value.copy(gameOver = false)) // Ensure game is not over for testing placement
+        delay(210) // Wait for piece placement and potential line clear animation
 
         val newState = viewModel.gameState.value
 
@@ -265,6 +265,7 @@ class GameViewModelTest {
 
         // Call movePiece to trigger placePiece (move down by 1 to trigger placement)
         viewModel.movePiece(0, 1)
+        delay(210)
 
         val newState = viewModel.gameState.value
 
@@ -314,19 +315,46 @@ class GameViewModelTest {
     }
 
     @Test
-    fun `clearLines should remove a single full line`() = runTest {
+    fun `getClearedLines should return the indices of cleared lines`() = runTest {
         val initialBoard = Array(BOARD_HEIGHT) { IntArray(BOARD_WIDTH) }
         // Fill the bottom line
         for (x in 0 until BOARD_WIDTH) {
             initialBoard[BOARD_HEIGHT - 1][x] = 1
         }
 
-        val (clearedBoard, linesCleared) = viewModel.clearLines(initialBoard)
+        val clearedLinesIndices = viewModel.getClearedLines(initialBoard)
 
-        assertEquals(1, linesCleared)
-        // Check if the board has one less row (conceptually) and the top is filled with empty row
-        // The size of the returned array should be the same, but the content should be shifted
-        assertEquals(true, clearedBoard[BOARD_HEIGHT - 1].all { it == 0 }) // The new bottom line should be empty
-        assertEquals(true, clearedBoard[0].all { it == 0 }) // The top line should be empty
+        assertEquals(1, clearedLinesIndices.size)
+        assertEquals(BOARD_HEIGHT - 1, clearedLinesIndices[0])
+    }
+
+    @Test
+    fun `placePiece should trigger line clearing animation`() = runTest {
+        val initialBoard = Array(BOARD_HEIGHT) { IntArray(BOARD_WIDTH) }
+        // Fill the bottom line
+        for (x in 0 until BOARD_WIDTH) {
+            initialBoard[BOARD_HEIGHT - 1][x] = 1
+        }
+        val pieceToPlace = Piece(listOf(listOf(1)), Color.Red, 0, 0)
+
+        val gameState = viewModel.gameState.value.copy(
+            board = initialBoard,
+            currentPiece = pieceToPlace
+        )
+        viewModel.setGameStateForTest(gameState)
+
+        viewModel.placePiece()
+
+        // Check that the clearingLines state is updated
+        assertEquals(listOf(BOARD_HEIGHT - 1), viewModel.gameState.value.clearingLines)
+
+        // Wait for the animation to finish
+        delay(210)
+
+        // Check that the line is cleared and the board is updated
+        assertTrue(viewModel.gameState.value.board[0].all { it == 0 })
+        assertEquals(100, viewModel.gameState.value.score)
+        assertEquals(1, viewModel.gameState.value.linesCleared)
+        assertTrue(viewModel.gameState.value.clearingLines.isEmpty())
     }
 }
