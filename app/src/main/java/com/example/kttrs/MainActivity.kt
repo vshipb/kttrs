@@ -21,8 +21,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+
+
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -43,14 +44,20 @@ import com.example.kttrs.data.SettingsDataStore
 import com.example.kttrs.GameConstants.BOARD_HEIGHT
 import com.example.kttrs.GameConstants.BOARD_WIDTH
 import com.example.kttrs.GameConstants.colors
+import com.example.kttrs.GameConstants.drawableResIds
 import kotlin.math.min
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.res.imageResource
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 
 data class Piece(
     val shape: List<List<Int>> = emptyList(),
     val color: Color = Color.Transparent,
     val x: Int = 0,
-    val y: Int = 0
+    val y: Int = 0,
+    val drawableResId: Int = 0
 )
 
 
@@ -239,23 +246,20 @@ fun TetrisGame(gameViewModel: GameViewModel = viewModel(factory = GameViewModelF
 fun PiecePreview(piece: Piece?, modifier: Modifier = Modifier) {
     Box(modifier = modifier) {
         if (piece != null) {
+            val context = LocalContext.current
+            val imageBitmap = remember(piece.drawableResId) {
+                ImageBitmap.imageResource(context.resources, piece.drawableResId)
+            }
             Canvas(modifier = Modifier.fillMaxSize()) {
                 val cellSize = min(size.width / 4, size.height / 4)
+                val cellSizeInt = cellSize.toInt()
                 for (y in piece.shape.indices) {
                     for (x in piece.shape[y].indices) {
                         if (piece.shape[y][x] == 1) {
-                            drawRect(
-                                brush = Brush.verticalGradient(
-                                    colors = listOf(piece.color, piece.color.copy(alpha = 0.5f))
-                                ),
-                                topLeft = Offset(x * cellSize, y * cellSize),
-                                size = Size(cellSize, cellSize)
-                            )
-                            drawRect(
-                                color = Color.Black.copy(alpha = 0.2f),
-                                topLeft = Offset(x * cellSize, y * cellSize),
-                                size = Size(cellSize, cellSize),
-                                style = Stroke(width = 4f)
+                            drawImage(
+                                image = imageBitmap,
+                                dstOffset = IntOffset((x * cellSize).toInt(), (y * cellSize).toInt()),
+                                dstSize = IntSize(cellSizeInt, cellSizeInt)
                             )
                         }
                     }
@@ -267,39 +271,44 @@ fun PiecePreview(piece: Piece?, modifier: Modifier = Modifier) {
 
 @Composable
 fun GameBoard(board: Array<IntArray>, currentPiece: Piece, ghostPiece: Piece?, showGhostPiece: Boolean, modifier: Modifier = Modifier) {
+    val context = LocalContext.current
+    // Load ImageBitmaps outside Canvas scope
+    val blockImages = remember(drawableResIds) {
+        drawableResIds.map { ImageBitmap.imageResource(context.resources, it) }
+    }
+    val currentPieceImageBitmap = remember(currentPiece.drawableResId) {
+        ImageBitmap.imageResource(context.resources, currentPiece.drawableResId)
+    }
+    val ghostPieceImageBitmap = remember(ghostPiece?.drawableResId) {
+        ghostPiece?.drawableResId?.let { ImageBitmap.imageResource(context.resources, it) }
+    }
+
     Canvas(modifier = modifier.background(Brush.verticalGradient(listOf(Color.DarkGray, Color.Black)))) {
         val cellSize = min(size.width / BOARD_WIDTH, size.height / BOARD_HEIGHT)
+        val cellSizeInt = cellSize.toInt()
         // Draw board
         for (y in board.indices) {
             for (x in board[y].indices) {
                 if (board[y][x] != 0) {
-                    val color = colors[board[y][x] - 1]
-                    drawRect(
-                        brush = Brush.verticalGradient(
-                            colors = listOf(color, color.copy(alpha = 0.5f))
-                        ),
-                        topLeft = Offset(x * cellSize, y * cellSize),
-                        size = Size(cellSize, cellSize)
-                    )
-                    drawRect(
-                        color = Color.Black.copy(alpha = 0.2f),
-                        topLeft = Offset(x * cellSize, y * cellSize),
-                        size = Size(cellSize, cellSize),
-                        style = Stroke(width = 4f)
+                    val imageBitmap = blockImages[board[y][x] - 1]
+                    drawImage(
+                        image = imageBitmap,
+                        dstOffset = IntOffset((x * cellSize).toInt(), (y * cellSize).toInt()),
+                        dstSize = IntSize(cellSizeInt, cellSizeInt)
                     )
                 }
             }
         }
         // Draw ghost piece
-        if (showGhostPiece && ghostPiece != null) {
+        if (showGhostPiece && ghostPiece != null && ghostPieceImageBitmap != null) {
             for (y in ghostPiece.shape.indices) {
                 for (x in ghostPiece.shape[y].indices) {
                     if (ghostPiece.shape[y][x] == 1) {
-                        drawRect(
-                            color = ghostPiece.color.copy(alpha = 0.3f),
-                            topLeft = Offset((ghostPiece.x + x) * cellSize, (ghostPiece.y + y) * cellSize),
-                            size = Size(cellSize, cellSize),
-                            style = Stroke(width = 4f)
+                        drawImage(
+                            image = ghostPieceImageBitmap,
+                            dstOffset = IntOffset(((ghostPiece.x + x) * cellSize).toInt(), ((ghostPiece.y + y) * cellSize).toInt()),
+                            dstSize = IntSize(cellSizeInt, cellSizeInt),
+                            alpha = 0.3f // For ghost effect
                         )
                     }
                 }
@@ -309,18 +318,10 @@ fun GameBoard(board: Array<IntArray>, currentPiece: Piece, ghostPiece: Piece?, s
         for (y in currentPiece.shape.indices) {
             for (x in currentPiece.shape[y].indices) {
                 if (currentPiece.shape[y][x] == 1) {
-                    drawRect(
-                        brush = Brush.verticalGradient(
-                            colors = listOf(currentPiece.color, currentPiece.color.copy(alpha = 0.5f))
-                        ),
-                        topLeft = Offset((currentPiece.x + x) * cellSize, (currentPiece.y + y) * cellSize),
-                        size = Size(cellSize, cellSize)
-                    )
-                    drawRect(
-                        color = Color.Black.copy(alpha = 0.2f),
-                        topLeft = Offset((currentPiece.x + x) * cellSize, (currentPiece.y + y) * cellSize),
-                        size = Size(cellSize, cellSize),
-                        style = Stroke(width = 4f)
+                    drawImage(
+                        image = currentPieceImageBitmap,
+                        dstOffset = IntOffset(((currentPiece.x + x) * cellSize).toInt(), ((currentPiece.y + y) * cellSize).toInt()),
+                        dstSize = IntSize(cellSizeInt, cellSizeInt)
                     )
                 }
             }

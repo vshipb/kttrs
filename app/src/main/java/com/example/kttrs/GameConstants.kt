@@ -1,6 +1,7 @@
 package com.example.kttrs
 
 import androidx.compose.ui.graphics.Color
+import com.example.kttrs.R
 
 object GameConstants {
     const val BOARD_WIDTH = 10
@@ -24,5 +25,15 @@ object GameConstants {
         Color.Red,
         Color.Blue,
         Color.White
+    )
+
+    val drawableResIds = listOf(
+        R.drawable.block_i, // I
+        R.drawable.block_o, // O
+        R.drawable.block_t, // T
+        R.drawable.block_s, // S
+        R.drawable.block_z, // Z
+        R.drawable.block_j, // J
+        R.drawable.block_l   // L
     )
 }

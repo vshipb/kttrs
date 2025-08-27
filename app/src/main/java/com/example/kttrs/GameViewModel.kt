@@ -9,6 +9,7 @@ import com.example.kttrs.GameConstants.BOARD_HEIGHT
 import com.example.kttrs.GameConstants.BOARD_WIDTH
 import com.example.kttrs.GameConstants.colors
 import com.example.kttrs.GameConstants.shapes
+import com.example.kttrs.GameConstants.drawableResIds
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -305,7 +306,8 @@ class GameViewModel(private val settingsDataStore: SettingsDataStore) : ViewMode
             shape = shapes[index],
             color = colors[index],
             x = BOARD_WIDTH / 2 - 1,
-            y = 0
+            y = 0,
+            drawableResId = drawableResIds[index]
         )
     }
 
