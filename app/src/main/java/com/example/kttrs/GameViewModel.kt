@@ -235,8 +235,7 @@ class GameViewModel(private val settingsDataStore: SettingsDataStore) : ViewMode
         }
         _gameState.value = _gameState.value.copy(currentPiece = _gameState.value.currentPiece.copy(y = newY))
         lastMoveIsRotation = false
-        // After hard drop, the piece is on the ground, so start lock delay
-        startLockDelay()
+        placePiece()
     }
 
     fun rotatePieceRight() {
