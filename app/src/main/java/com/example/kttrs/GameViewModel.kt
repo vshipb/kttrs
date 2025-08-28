@@ -85,6 +85,7 @@ class GameViewModel(private val settingsDataStore: SettingsDataStore) : ViewMode
 
     private var gameJob: Job? = null
     private var lastMoveIsRotation = false
+    private var lockDelayJob: Job? = null
 
     init {
         viewModelScope.launch {
@@ -128,21 +129,72 @@ class GameViewModel(private val settingsDataStore: SettingsDataStore) : ViewMode
             while (true) {
                 delay(_gameState.value.gameSpeed)
                 if (!_gameState.value.gameOver) {
-                    movePiece(0, 1)
+                    // Gravity tick
+                    val piece = _gameState.value.currentPiece
+                    val newPiece = piece.copy(y = piece.y + 1)
+                    if (isValidPosition(newPiece)) {
+                        _gameState.value = _gameState.value.copy(currentPiece = newPiece)
+                        lockDelayJob?.cancel() // Cancel any active lock delay if piece moved down
+                    } else {
+                        // Cannot move down, start/continue lock delay
+                        startLockDelay()
+                    }
                 }
             }
         }
     }
 
-    fun movePiece(dx: Int, dy: Int) {
+    private fun startLockDelay() {
+        if (lockDelayJob?.isActive == true) return // Lock delay already active
+
+        lockDelayJob = viewModelScope.launch {
+            delay(500) // Lock delay duration (e.g., 500ms)
+            // Check if piece is still on ground before placing
+            val piece = _gameState.value.currentPiece
+            if (!isValidPosition(piece.copy(y = piece.y + 1))) {
+                placePiece()
+            }
+            lockDelayJob = null
+        }
+    }
+
+    fun movePiece(dx: Int) { // Player horizontal move
         if (_gameState.value.gameOver) return
 
-        val newPiece = _gameState.value.currentPiece.copy(x = _gameState.value.currentPiece.x + dx, y = _gameState.value.currentPiece.y + dy)
+        val piece = _gameState.value.currentPiece
+        val newPiece = piece.copy(x = piece.x + dx)
+
+        if (isValidPosition(newPiece)) {
+            _gameState.value = _gameState.value.copy(currentPiece = newPiece)
+            // Reset lock delay if piece is on ground after move
+            if (!isValidPosition(newPiece.copy(y = newPiece.y + 1))) {
+                lockDelayJob?.cancel()
+                startLockDelay()
+            } else {
+                // Piece moved off ground, cancel lock delay
+                lockDelayJob?.cancel()
+            }
+        }
+    }
+
+    fun softDrop() {
+        if (_gameState.value.gameOver) return
+
+        val newPiece = _gameState.value.currentPiece.copy(y = _gameState.value.currentPiece.y + 1)
         if (isValidPosition(newPiece)) {
             lastMoveIsRotation = false
             _gameState.value = _gameState.value.copy(currentPiece = newPiece)
-        } else if (dy > 0) {
-            placePiece()
+            // Reset lock delay if piece is on ground after move
+            if (!isValidPosition(newPiece.copy(y = newPiece.y + 1))) {
+                lockDelayJob?.cancel()
+                startLockDelay()
+            } else {
+                // Piece moved off ground, cancel lock delay
+                lockDelayJob?.cancel()
+            }
+        } else {
+            // Cannot move down, start/continue lock delay
+            startLockDelay()
         }
     }
 
@@ -183,7 +235,8 @@ class GameViewModel(private val settingsDataStore: SettingsDataStore) : ViewMode
         }
         _gameState.value = _gameState.value.copy(currentPiece = _gameState.value.currentPiece.copy(y = newY))
         lastMoveIsRotation = false
-        placePiece()
+        // After hard drop, the piece is on the ground, so start lock delay
+        startLockDelay()
     }
 
     fun rotatePieceRight() {
@@ -221,6 +274,13 @@ class GameViewModel(private val settingsDataStore: SettingsDataStore) : ViewMode
             if (isValidPosition(newPiece)) {
                 lastMoveIsRotation = true
                 _gameState.value = _gameState.value.copy(currentPiece = newPiece)
+
+                // Reset lock delay
+                lockDelayJob?.cancel()
+                val isNewPieceOnGround = !isValidPosition(newPiece.copy(y = newPiece.y + 1))
+                if (isNewPieceOnGround) {
+                    startLockDelay()
+                }
                 return
             }
         }

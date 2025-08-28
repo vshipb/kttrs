@@ -102,15 +102,15 @@ fun TetrisGame(gameViewModel: GameViewModel = viewModel(
                         onDragEnd = {
                             if (abs(dragDistanceX) > abs(dragDistanceY)) {
                                 if (dragDistanceX > 0) {
-                                    gameViewModel.movePiece(1, 0)
+                                    gameViewModel.movePiece(1)
                                 } else {
-                                    gameViewModel.movePiece(-1, 0)
+                                    gameViewModel.movePiece(-1)
                                 }
                             } else {
                                 if (dragDistanceY > 200) { // Hard drop threshold
                                     gameViewModel.hardDrop()
                                 } else if (dragDistanceY > 0) {
-                                    gameViewModel.movePiece(0, 1)
+                                    gameViewModel.softDrop()
                                 } else {
                                     gameViewModel.rotatePieceRight()
                                 }
@@ -220,7 +220,7 @@ fun TetrisGame(gameViewModel: GameViewModel = viewModel(
                         }
                         Spacer(modifier = Modifier.Companion.height(8.dp))
                         Row {
-                            OutlinedButton(onClick = { gameViewModel.movePiece(-1, 0) }) {
+                            OutlinedButton(onClick = { gameViewModel.movePiece(-1) }) {
                                 Icon(
                                     Icons.AutoMirrored.Filled.KeyboardArrowLeft,
                                     contentDescription = "Left",
@@ -228,7 +228,7 @@ fun TetrisGame(gameViewModel: GameViewModel = viewModel(
                                 )
                             }
                             Spacer(modifier = Modifier.Companion.width(8.dp))
-                            OutlinedButton(onClick = { gameViewModel.movePiece(1, 0) }) {
+                            OutlinedButton(onClick = { gameViewModel.movePiece(1) }) {
                                 Icon(
                                     Icons.AutoMirrored.Filled.KeyboardArrowRight,
                                     contentDescription = "Right",
@@ -254,7 +254,7 @@ fun TetrisGame(gameViewModel: GameViewModel = viewModel(
                             )
                         }
                         Spacer(modifier = Modifier.Companion.height(8.dp))
-                        OutlinedButton(onClick = { gameViewModel.movePiece(0, 1) }) {
+                        OutlinedButton(onClick = { gameViewModel.softDrop() }) {
                             Icon(
                                 Icons.Filled.KeyboardArrowDown,
                                 contentDescription = "Soft Drop",

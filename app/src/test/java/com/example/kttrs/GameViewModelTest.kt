@@ -47,7 +47,7 @@ class GameViewModelTest {
         val initialState = viewModel.gameState.value
         val initialX = initialState.currentPiece.x
 
-        viewModel.movePiece(1, 0)
+        viewModel.movePiece(1)
 
         val newState = viewModel.gameState.value
         assertEquals(initialX + 1, newState.currentPiece.x)
@@ -59,7 +59,7 @@ class GameViewModelTest {
         val gameState = viewModel.gameState.value.copy(currentPiece = initialPiece)
         viewModel.setGameStateForTest(gameState)
 
-        viewModel.movePiece(-1, 0)
+        viewModel.movePiece(-1)
 
         val newState = viewModel.gameState.value
         assertEquals(0, newState.currentPiece.x)
@@ -167,7 +167,7 @@ class GameViewModelTest {
         viewModel.setGameStateForTest(gameState)
 
         viewModel.hardDrop()
-        delay(210) // Wait for piece placement and potential line clear animation
+        delay(510) // Wait for piece placement and potential line clear animation
 
         val newState = viewModel.gameState.value
 
@@ -243,7 +243,7 @@ class GameViewModelTest {
         viewModel.setGameStateForTest(gameState)
 
         // Call movePiece to trigger placePiece (move down by 1 to trigger placement)
-        viewModel.movePiece(0, 1)
+        viewModel.placePiece()
         delay(210)
 
         val newState = viewModel.gameState.value
