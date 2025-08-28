@@ -7,7 +7,7 @@ import com.example.kttrs.data.SettingsDataStore
 import com.example.kttrs.ui.ControlMode
 import com.example.kttrs.GameConstants.BOARD_HEIGHT
 import com.example.kttrs.GameConstants.BOARD_WIDTH
-import com.example.kttrs.GameConstants.pieceInfos
+
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -292,7 +292,7 @@ class GameViewModel(private val settingsDataStore: SettingsDataStore) : ViewMode
         for (y in piece.shape.indices) {
             for (x in piece.shape[y].indices) {
                 if (piece.shape[y][x] == 1) {
-                    val pieceIndex = pieceInfos.indexOfFirst { it.type == piece.type }
+                    val pieceIndex = piece.type.ordinal
                     if (pieceIndex != -1) {
                         newBoard[piece.y + y][piece.x + x] = pieceIndex + 1
                     }
@@ -393,14 +393,14 @@ class GameViewModel(private val settingsDataStore: SettingsDataStore) : ViewMode
     }
 
     private fun randomPiece(): Piece {
-        val pieceInfo = pieceInfos.random()
+        val pieceType = PieceType.values().random()
         return Piece(
-            type = pieceInfo.type,
-            shape = pieceInfo.shape,
+            type = pieceType,
+            shape = pieceType.shape,
             x = BOARD_WIDTH / 2 - 1,
             y = 0,
             rotation = 0,
-            drawableResId = pieceInfo.drawableResId
+            drawableResId = pieceType.drawableResId
         )
     }
 

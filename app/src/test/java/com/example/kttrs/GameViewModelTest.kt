@@ -2,7 +2,7 @@ package com.example.kttrs
 
 import com.example.kttrs.GameConstants.BOARD_HEIGHT
 import com.example.kttrs.GameConstants.BOARD_WIDTH
-import com.example.kttrs.GameConstants.pieceInfos
+
 
 import com.example.kttrs.data.SettingsDataStore
 import com.example.kttrs.ui.ControlMode
@@ -173,7 +173,7 @@ class GameViewModelTest {
         val newState = viewModel.gameState.value
 
         // Verify the initialPiece is placed on the board at the bottom
-        val pieceIndex = pieceInfos.indexOfFirst { it.drawableResId == initialPiece.drawableResId }
+        val pieceIndex = initialPiece.type.ordinal
         assertEquals(pieceIndex + 1, newState.board[BOARD_HEIGHT - 1][0]) // Assuming 1x1 piece at (0,0) lands at (0, BOARD_HEIGHT-1)
         assertEquals(false, newState.gameOver)
 
@@ -250,7 +250,7 @@ class GameViewModelTest {
         val newState = viewModel.gameState.value
 
         // Assert the piece is on the board
-        val pieceIndex = pieceInfos.indexOfFirst { it.drawableResId == pieceToPlace.drawableResId }
+        val pieceIndex = pieceToPlace.type.ordinal
         assertEquals(pieceIndex + 1, newState.board[BOARD_HEIGHT - 1][0]) // Piece placed at bottom
     }
 

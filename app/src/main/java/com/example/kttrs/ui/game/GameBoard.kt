@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import com.example.kttrs.GameConstants
 import com.example.kttrs.Piece
+import com.example.kttrs.PieceType
 import kotlin.math.min
 
 @Composable
@@ -29,8 +30,8 @@ fun GameBoard(
 ) {
     val context = LocalContext.current
     // Load ImageBitmaps outside Canvas scope
-    val blockImages = remember(GameConstants.pieceInfos) {
-        GameConstants.pieceInfos.map {
+    val blockImages = remember(PieceType.values()) {
+        PieceType.values().map {
             ImageBitmap.Companion.imageResource(
                 context.resources,
                 it.drawableResId
