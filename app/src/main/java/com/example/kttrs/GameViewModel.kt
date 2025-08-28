@@ -180,10 +180,15 @@ class GameViewModel(private val settingsDataStore: SettingsDataStore) : ViewMode
     fun softDrop() {
         if (_gameState.value.gameOver) return
 
+        val initialY = _gameState.value.currentPiece.y // Capture initial Y
         val newPiece = _gameState.value.currentPiece.copy(y = _gameState.value.currentPiece.y + 1)
         if (isValidPosition(newPiece)) {
             lastMoveIsRotation = false
             _gameState.value = _gameState.value.copy(currentPiece = newPiece)
+            // Add score for soft drop
+            val dropDistance = newPiece.y - initialY
+            _gameState.value = _gameState.value.copy(score = _gameState.value.score + dropDistance * 1) // 1 point per cell
+
             // Reset lock delay if piece is on ground after move
             if (!isValidPosition(newPiece.copy(y = newPiece.y + 1))) {
                 lockDelayJob?.cancel()
@@ -223,6 +228,7 @@ class GameViewModel(private val settingsDataStore: SettingsDataStore) : ViewMode
     fun hardDrop() {
         if (_gameState.value.gameOver) return
 
+        val initialY = _gameState.value.currentPiece.y // Capture initial Y
         var newY = _gameState.value.currentPiece.y
         while (true) {
             val nextY = newY + 1
@@ -236,6 +242,10 @@ class GameViewModel(private val settingsDataStore: SettingsDataStore) : ViewMode
         _gameState.value = _gameState.value.copy(currentPiece = _gameState.value.currentPiece.copy(y = newY))
         lastMoveIsRotation = false
         placePiece()
+
+        // Add score for hard drop
+        val dropDistance = newY - initialY
+        _gameState.value = _gameState.value.copy(score = _gameState.value.score + dropDistance * 2) // 2 points per cell
     }
 
     fun rotatePieceRight() {
