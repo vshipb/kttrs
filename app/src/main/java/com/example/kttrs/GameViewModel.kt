@@ -84,6 +84,7 @@ class GameViewModel(private val settingsDataStore: SettingsDataStore) : ViewMode
     )
 
     private var gameJob: Job? = null
+    private var lastMoveIsRotation = false
 
     init {
         viewModelScope.launch {
@@ -138,6 +139,7 @@ class GameViewModel(private val settingsDataStore: SettingsDataStore) : ViewMode
 
         val newPiece = _gameState.value.currentPiece.copy(x = _gameState.value.currentPiece.x + dx, y = _gameState.value.currentPiece.y + dy)
         if (isValidPosition(newPiece)) {
+            lastMoveIsRotation = false
             _gameState.value = _gameState.value.copy(currentPiece = newPiece)
         } else if (dy > 0) {
             placePiece()
@@ -180,6 +182,7 @@ class GameViewModel(private val settingsDataStore: SettingsDataStore) : ViewMode
             }
         }
         _gameState.value = _gameState.value.copy(currentPiece = _gameState.value.currentPiece.copy(y = newY))
+        lastMoveIsRotation = false
         placePiece()
     }
 
@@ -195,14 +198,17 @@ class GameViewModel(private val settingsDataStore: SettingsDataStore) : ViewMode
     internal fun rotatePiece(clockwise: Boolean) {
         if (_gameState.value.gameOver) return
 
-        val shape = _gameState.value.currentPiece.shape
+        val piece = _gameState.value.currentPiece
+        if (piece.type == PieceType.O) return // O piece doesn't rotate
+
+        val shape = piece.shape
         val newShape = if (clockwise) {
             List(shape[0].size) { y ->
                 List(shape.size) { x ->
                     shape[shape.size - 1 - x][y]
                 }
             }
-        } else {
+        } else { // counter-clockwise
             List(shape[0].size) { y ->
                 List(shape.size) { x ->
                     shape[x][shape[0].size - 1 - y]
@@ -210,17 +216,57 @@ class GameViewModel(private val settingsDataStore: SettingsDataStore) : ViewMode
             }
         }
 
-        val testOffsets = listOf(0, 1, -1, 2, -2)
-        for (offset in testOffsets) {
-            val newPiece = _gameState.value.currentPiece.copy(
+        val oldRotation = piece.rotation
+        val newRotation = if (clockwise) (oldRotation + 1) % 4 else (oldRotation + 3) % 4
+
+        val kickData = if (piece.type == PieceType.I) {
+            GameConstants.iKickData
+        } else {
+            GameConstants.commonKickData
+        }
+
+        val kicks = kickData[oldRotation to newRotation] ?: emptyList()
+
+        for (kick in kicks) {
+            val newPiece = piece.copy(
                 shape = newShape,
-                x = _gameState.value.currentPiece.x + offset
+                x = piece.x + kick.first,
+                y = piece.y - kick.second, // SRS y-axis is inverted from our board y-axis
+                rotation = newRotation
             )
             if (isValidPosition(newPiece)) {
+                lastMoveIsRotation = true
                 _gameState.value = _gameState.value.copy(currentPiece = newPiece)
                 return
             }
         }
+    }
+
+    private fun isTSpin(piece: Piece, board: Array<IntArray>): Boolean {
+        if (piece.type != PieceType.T) return false
+
+        // T-Spin is defined by 3 of the 4 corners of the piece's 3x3 bounding box being occupied.
+        // The center of the T piece is at x+1, y+1 of its local coordinates.
+        val cx = piece.x + 1
+        val cy = piece.y + 1
+
+        val corners = listOf(
+            Pair(cx - 1, cy - 1), // Top-left
+            Pair(cx + 1, cy - 1), // Top-right
+            Pair(cx - 1, cy + 1), // Bottom-left
+            Pair(cx + 1, cy + 1)  // Bottom-right
+        )
+
+        var occupiedCorners = 0
+        for (corner in corners) {
+            val x = corner.first
+            val y = corner.second
+            if (x < 0 || x >= BOARD_WIDTH || y < 0 || y >= BOARD_HEIGHT || board[y][x] != 0) {
+                occupiedCorners++
+            }
+        }
+
+        return occupiedCorners >= 3
     }
 
     @VisibleForTesting
@@ -236,21 +282,44 @@ class GameViewModel(private val settingsDataStore: SettingsDataStore) : ViewMode
             }
         }
 
+        val piece = _gameState.value.currentPiece
+        val board = _gameState.value.board
+
+        val isTSpinMove = lastMoveIsRotation && isTSpin(piece, board)
+        lastMoveIsRotation = false // Reset flag
+
         val newBoard = _gameState.value.board.map { it.clone() }.toTypedArray()
-        for (y in _gameState.value.currentPiece.shape.indices) {
-            for (x in _gameState.value.currentPiece.shape[y].indices) {
-                if (_gameState.value.currentPiece.shape[y][x] == 1) {
-                    val pieceIndex = pieceInfos.indexOfFirst { it.drawableResId == _gameState.value.currentPiece.drawableResId }
+        for (y in piece.shape.indices) {
+            for (x in piece.shape[y].indices) {
+                if (piece.shape[y][x] == 1) {
+                    val pieceIndex = pieceInfos.indexOfFirst { it.type == piece.type }
                     if (pieceIndex != -1) {
-                        newBoard[_gameState.value.currentPiece.y + y][_gameState.value.currentPiece.x + x] = pieceIndex + 1
+                        newBoard[piece.y + y][piece.x + x] = pieceIndex + 1
                     }
                 }
             }
         }
 
         val clearedLinesIndices = getClearedLines(newBoard)
+        val scoreToAdd: Int
 
-        if (clearedLinesIndices.isNotEmpty()) {
+        if (isTSpinMove) {
+            scoreToAdd = when (clearedLinesIndices.size) {
+                1 -> 800  // T-Spin Single
+                2 -> 1200 // T-Spin Double
+                else -> 400 // T-Spin
+            }
+        } else {
+            scoreToAdd = when (clearedLinesIndices.size) {
+                1 -> 100
+                2 -> 300
+                3 -> 500
+                4 -> 800 // Tetris
+                else -> 0
+            }
+        }
+
+        if (clearedLinesIndices.isNotEmpty() || scoreToAdd > 0) {
             viewModelScope.launch {
                 _gameState.value = _gameState.value.copy(
                     board = newBoard,
@@ -262,7 +331,7 @@ class GameViewModel(private val settingsDataStore: SettingsDataStore) : ViewMode
                 val newRows = Array(clearedLinesIndices.size) { IntArray(BOARD_WIDTH) }
                 val finalBoard = newRows + boardAfterClearing
 
-                val newScore = _gameState.value.score + clearedLinesIndices.size * 100
+                val newScore = _gameState.value.score + scoreToAdd
                 val newLinesCleared = _gameState.value.linesCleared + clearedLinesIndices.size
                 val newSpeed = 500L - (newLinesCleared / 10) * 50
                 val newPiece = _gameState.value.nextPiece
@@ -326,9 +395,11 @@ class GameViewModel(private val settingsDataStore: SettingsDataStore) : ViewMode
     private fun randomPiece(): Piece {
         val pieceInfo = pieceInfos.random()
         return Piece(
+            type = pieceInfo.type,
             shape = pieceInfo.shape,
             x = BOARD_WIDTH / 2 - 1,
             y = 0,
+            rotation = 0,
             drawableResId = pieceInfo.drawableResId
         )
     }
