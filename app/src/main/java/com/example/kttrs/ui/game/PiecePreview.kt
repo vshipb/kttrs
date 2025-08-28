@@ -12,6 +12,8 @@ import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import com.example.kttrs.Piece
+import com.example.kttrs.drawableResId
+import com.example.kttrs.shape
 import kotlin.math.min
 
 @Composable

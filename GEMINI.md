@@ -41,3 +41,4 @@ This project uses the Gradle wrapper for building and running.
 *   **Dependencies:** Dependencies are managed using the `libs.versions.toml` file. Use this file to update or add new dependencies.
 *   **Testing:** The project is set up for both unit tests (in `src/test`) and instrumented tests (in `src/androidTest`). Write tests for new features and bug fixes.
 *   **Committing:** Do not commit changes without explicit instruction from the user.
+*   **Process:** Do not start implementing changes until all details have been discussed and agreed upon.

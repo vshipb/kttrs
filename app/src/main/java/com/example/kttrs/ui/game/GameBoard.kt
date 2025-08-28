@@ -17,6 +17,8 @@ import androidx.compose.ui.unit.IntSize
 import com.example.kttrs.GameConstants
 import com.example.kttrs.Piece
 import com.example.kttrs.PieceType
+import com.example.kttrs.drawableResId
+import com.example.kttrs.shape
 import kotlin.math.min
 
 @Composable

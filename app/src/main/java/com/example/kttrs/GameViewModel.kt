@@ -201,21 +201,6 @@ class GameViewModel(private val settingsDataStore: SettingsDataStore) : ViewMode
         val piece = _gameState.value.currentPiece
         if (piece.type == PieceType.O) return // O piece doesn't rotate
 
-        val shape = piece.shape
-        val newShape = if (clockwise) {
-            List(shape[0].size) { y ->
-                List(shape.size) { x ->
-                    shape[shape.size - 1 - x][y]
-                }
-            }
-        } else { // counter-clockwise
-            List(shape[0].size) { y ->
-                List(shape.size) { x ->
-                    shape[x][shape[0].size - 1 - y]
-                }
-            }
-        }
-
         val oldRotation = piece.rotation
         val newRotation = if (clockwise) (oldRotation + 1) % 4 else (oldRotation + 3) % 4
 
@@ -229,7 +214,6 @@ class GameViewModel(private val settingsDataStore: SettingsDataStore) : ViewMode
 
         for (kick in kicks) {
             val newPiece = piece.copy(
-                shape = newShape,
                 x = piece.x + kick.first,
                 y = piece.y - kick.second, // SRS y-axis is inverted from our board y-axis
                 rotation = newRotation
@@ -292,10 +276,8 @@ class GameViewModel(private val settingsDataStore: SettingsDataStore) : ViewMode
         for (y in piece.shape.indices) {
             for (x in piece.shape[y].indices) {
                 if (piece.shape[y][x] == 1) {
-                    val pieceIndex = piece.type.ordinal
-                    if (pieceIndex != -1) {
-                        newBoard[piece.y + y][piece.x + x] = pieceIndex + 1
-                    }
+                    val pieceIndex = piece.type?.ordinal ?: 0
+                    newBoard[piece.y + y][piece.x + x] = pieceIndex + 1
                 }
             }
         }
@@ -395,12 +377,10 @@ class GameViewModel(private val settingsDataStore: SettingsDataStore) : ViewMode
     private fun randomPiece(): Piece {
         val pieceType = PieceType.values().random()
         return Piece(
-            type = pieceType,
-            shape = pieceType.shape,
+            spec = pieceType,
             x = BOARD_WIDTH / 2 - 1,
             y = 0,
-            rotation = 0,
-            drawableResId = pieceType.drawableResId
+            rotation = 0
         )
     }
 
