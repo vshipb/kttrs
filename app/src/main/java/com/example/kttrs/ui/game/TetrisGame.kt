@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -143,7 +144,7 @@ fun TetrisGame(gameViewModel: GameViewModel = viewModel(
                         color = Color.Companion.Yellow
                     )
                     Spacer(modifier = Modifier.Companion.height(16.dp))
-                    Button(onClick = { gameViewModel.restartGame() }) {
+                    Button(onClick = { gameViewModel.restartGame() }, colors = ButtonDefaults.buttonColors(containerColor = Color.Red)) {
                         Text("Restart",
                             style = MaterialTheme.typography.headlineLarge,
                             color = Color.Yellow)
