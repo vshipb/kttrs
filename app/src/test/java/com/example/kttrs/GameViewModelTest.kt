@@ -406,7 +406,7 @@ class GameViewModelTest {
     }
 
     @Test
-    fun `currentSessionHighScore should be initialized with persisted high score`() = runTest {
+    fun `topScore should be initialized with persisted high score`() = runTest {
         // Arrange
         val persistedHighScore = 500
         whenever(settingsDataStore.highScore).thenReturn(flowOf(persistedHighScore))
@@ -416,11 +416,11 @@ class GameViewModelTest {
         testDispatcher.scheduler.advanceUntilIdle() // Ensure the flow collector runs
 
         // Assert
-        assertEquals(persistedHighScore, viewModel.currentSessionHighScore.value)
+        assertEquals(persistedHighScore, viewModel.topScore.value)
     }
 
     @Test
-    fun `currentSessionHighScore should be updated when game score surpasses it`() = runTest {
+    fun `topScore should be updated when game score surpasses it`() = runTest {
         // Arrange
         val initialHighScore = 100
         val newScore = 150
@@ -434,6 +434,6 @@ class GameViewModelTest {
         testDispatcher.scheduler.advanceUntilIdle() // Ensure the score collector runs
 
         // Assert
-        assertEquals(newScore, viewModel.currentSessionHighScore.value)
+        assertEquals(newScore, viewModel.topScore.value)
     }
 }

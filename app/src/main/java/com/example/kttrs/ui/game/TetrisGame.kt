@@ -22,6 +22,8 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardDoubleArrowDown
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -56,7 +58,7 @@ fun TetrisGame(gameViewModel: GameViewModel = viewModel(
 ) {
     val gameState by gameViewModel.gameState.collectAsState()
     val showGhostPiece by gameViewModel.showGhostPiece.collectAsState(initial = true)
-    val currentSessionHighScore by gameViewModel.currentSessionHighScore.collectAsState()
+    val topScore by gameViewModel.topScore.collectAsState()
     var showSettings by remember { mutableStateOf(false) }
 
     if (showSettings) {
@@ -138,11 +140,13 @@ fun TetrisGame(gameViewModel: GameViewModel = viewModel(
                     Text(
                         "Game Over",
                         style = MaterialTheme.typography.headlineLarge,
-                        color = Color.Companion.White
+                        color = Color.Companion.Yellow
                     )
                     Spacer(modifier = Modifier.Companion.height(16.dp))
-                    OutlinedButton(onClick = { gameViewModel.restartGame() }) {
-                        Text("Restart")
+                    Button(onClick = { gameViewModel.restartGame() }) {
+                        Text("Restart",
+                            style = MaterialTheme.typography.headlineLarge,
+                            color = Color.Yellow)
                     }
                 }
             }
@@ -169,18 +173,20 @@ fun TetrisGame(gameViewModel: GameViewModel = viewModel(
                         )
                     }
                     Text(
-                        "High Score: $currentSessionHighScore",
-                        color = Color.Companion.White,
+                        "Top: $topScore",
+                        color = Color.Companion.Yellow,
                         style = MaterialTheme.typography.headlineMedium
                     )
+                    Spacer(modifier = Modifier.Companion.height(12.dp))
                     Text(
                         "Score: ${gameState.score}",
-                        color = Color.Companion.White,
+                        color = Color.Companion.Green,
                         style = MaterialTheme.typography.headlineMedium
                     )
+                    Spacer(modifier = Modifier.Companion.height(12.dp))
                     Text(
                         "Lines: ${gameState.linesCleared}",
-                        color = Color.Companion.White,
+                        color = Color.Companion.Blue,
                         style = MaterialTheme.typography.headlineMedium
                     )
                 }

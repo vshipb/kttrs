@@ -90,8 +90,8 @@ class GameViewModel(private val settingsDataStore: SettingsDataStore) : ViewMode
         initialValue = 0
     )
 
-    private val _currentSessionHighScore = MutableStateFlow(0) // Initialize with 0, will be updated from persisted high score
-    val currentSessionHighScore: StateFlow<Int> = _currentSessionHighScore.asStateFlow()
+    private val _topScore = MutableStateFlow(0) // Initialize with 0, will be updated from persisted high score
+    val topScore: StateFlow<Int> = _topScore.asStateFlow()
 
     private var gameJob: Job? = null
     private var lastMoveIsRotation = false
@@ -111,16 +111,16 @@ class GameViewModel(private val settingsDataStore: SettingsDataStore) : ViewMode
         // Observe score changes to update current session high score
         viewModelScope.launch {
             _gameState.map { it.score }.collectLatest { currentScore ->
-                if (currentScore > _currentSessionHighScore.value) {
-                    _currentSessionHighScore.value = currentScore
+                if (currentScore > _topScore.value) {
+                    _topScore.value = currentScore
                 }
             }
         }
         // Observe persisted high score to initialize current session high score
         viewModelScope.launch {
             highScore.collectLatest { persistedHighScore ->
-                if (persistedHighScore > _currentSessionHighScore.value) {
-                    _currentSessionHighScore.value = persistedHighScore
+                if (persistedHighScore > _topScore.value) {
+                    _topScore.value = persistedHighScore
                 }
             }
         }
