@@ -56,6 +56,7 @@ fun TetrisGame(gameViewModel: GameViewModel = viewModel(
 ) {
     val gameState by gameViewModel.gameState.collectAsState()
     val showGhostPiece by gameViewModel.showGhostPiece.collectAsState(initial = true)
+    val currentSessionHighScore by gameViewModel.currentSessionHighScore.collectAsState()
     var showSettings by remember { mutableStateOf(false) }
 
     if (showSettings) {
@@ -167,6 +168,11 @@ fun TetrisGame(gameViewModel: GameViewModel = viewModel(
                             tint = Color.Companion.White
                         )
                     }
+                    Text(
+                        "High Score: $currentSessionHighScore",
+                        color = Color.Companion.White,
+                        style = MaterialTheme.typography.headlineMedium
+                    )
                     Text(
                         "Score: ${gameState.score}",
                         color = Color.Companion.White,

@@ -1,14 +1,10 @@
 package com.example.kttrs
 
-import com.example.kttrs.GameConstants.BOARD_HEIGHT
-import com.example.kttrs.GameConstants.BOARD_WIDTH
-
 import com.example.kttrs.data.SettingsDataStore
 import com.example.kttrs.ui.ControlMode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -19,7 +15,11 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import com.example.kttrs.GameConstants.BOARD_HEIGHT
+import com.example.kttrs.GameConstants.BOARD_WIDTH
 
 @ExperimentalCoroutinesApi
 class GameViewModelTest {
@@ -34,6 +34,7 @@ class GameViewModelTest {
         Dispatchers.setMain(testDispatcher)
         whenever(settingsDataStore.controlMode).thenReturn(flowOf(ControlMode.Buttons))
         whenever(settingsDataStore.showGhostPiece).thenReturn(flowOf(true))
+        whenever(settingsDataStore.highScore).thenReturn(flowOf(0)) // Mock high score
         viewModel = GameViewModel(settingsDataStore)
     }
 
@@ -167,7 +168,7 @@ class GameViewModelTest {
         viewModel.setGameStateForTest(gameState)
 
         viewModel.hardDrop()
-        delay(510) // Wait for piece placement and potential line clear animation
+        testDispatcher.scheduler.advanceUntilIdle() // Wait for piece placement and potential line clear animation
 
         val newState = viewModel.gameState.value
 
@@ -244,7 +245,7 @@ class GameViewModelTest {
 
         // Call movePiece to trigger placePiece (move down by 1 to trigger placement)
         viewModel.placePiece()
-        delay(210)
+        testDispatcher.scheduler.advanceUntilIdle()
 
         val newState = viewModel.gameState.value
 
@@ -326,12 +327,113 @@ class GameViewModelTest {
         viewModel.placePiece()
 
         // Wait for the animation to finish
-        delay(210)
+        testDispatcher.scheduler.advanceUntilIdle()
 
         // Check that the line is cleared and the board is updated
         assertTrue(viewModel.gameState.value.board[0].all { it == 0 })
         assertEquals(100, viewModel.gameState.value.score) // Score for 1 line
         assertEquals(1, viewModel.gameState.value.linesCleared)
         assertTrue(viewModel.gameState.value.clearingLines.isEmpty())
+    }
+
+    @Test
+    fun `updateBoard should save new high score when game is over and score is higher`() = runTest {
+        // Arrange
+        val spawnX = BOARD_WIDTH / 2 - 1
+        val spawnY = 0
+        val initialHighScore = 100
+        val newHighScore = 200
+        whenever(settingsDataStore.highScore).thenReturn(flowOf(initialHighScore))
+        viewModel = GameViewModel(settingsDataStore)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val board = Array(BOARD_HEIGHT) { IntArray(BOARD_WIDTH) }
+        board[spawnY][spawnX] = 1 // Block the spawn point
+
+        val pieceToPlace = Piece(spec = TestPieceSpec(shape = listOf(listOf(1))), x = 0, y = 5)
+        // This is the piece that will be used in the game over check
+        val nextPiece = Piece(spec = TestPieceSpec(shape = listOf(listOf(1))), x = spawnX, y = spawnY)
+
+        val gameState = viewModel.gameState.value.copy(
+            board = board,
+            currentPiece = pieceToPlace,
+            nextPiece = nextPiece,
+            score = newHighScore
+        )
+        viewModel.setGameStateForTest(gameState)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // Act
+        viewModel.placePiece()
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // Assert
+        verify(settingsDataStore).saveHighScore(newHighScore)
+    }
+
+    @Test
+    fun `updateBoard should not save high score when game is over and score is lower`() = runTest {
+        // Arrange
+        val spawnX = BOARD_WIDTH / 2 - 1
+        val spawnY = 0
+        val initialHighScore = 100
+        val score = 50
+        whenever(settingsDataStore.highScore).thenReturn(flowOf(initialHighScore))
+        viewModel = GameViewModel(settingsDataStore)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val board = Array(BOARD_HEIGHT) { IntArray(BOARD_WIDTH) }
+        board[spawnY][spawnX] = 1 // Block the spawn point
+
+        val pieceToPlace = Piece(spec = TestPieceSpec(shape = listOf(listOf(1))), x = 0, y = 5)
+        val nextPiece = Piece(spec = TestPieceSpec(shape = listOf(listOf(1))), x = spawnX, y = spawnY)
+
+        val gameState = viewModel.gameState.value.copy(
+            board = board,
+            currentPiece = pieceToPlace,
+            nextPiece = nextPiece,
+            score = score
+        )
+        viewModel.setGameStateForTest(gameState)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // Act
+        viewModel.placePiece()
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // Assert
+        verify(settingsDataStore, never()).saveHighScore(score)
+    }
+
+    @Test
+    fun `currentSessionHighScore should be initialized with persisted high score`() = runTest {
+        // Arrange
+        val persistedHighScore = 500
+        whenever(settingsDataStore.highScore).thenReturn(flowOf(persistedHighScore))
+
+        // Act
+        viewModel = GameViewModel(settingsDataStore) // Re-initialize to pick up new mock
+        testDispatcher.scheduler.advanceUntilIdle() // Ensure the flow collector runs
+
+        // Assert
+        assertEquals(persistedHighScore, viewModel.currentSessionHighScore.value)
+    }
+
+    @Test
+    fun `currentSessionHighScore should be updated when game score surpasses it`() = runTest {
+        // Arrange
+        val initialHighScore = 100
+        val newScore = 150
+        whenever(settingsDataStore.highScore).thenReturn(flowOf(initialHighScore))
+        viewModel = GameViewModel(settingsDataStore)
+        testDispatcher.scheduler.advanceUntilIdle() // Ensure initial high score is collected
+
+        // Act
+        val gameState = viewModel.gameState.value.copy(score = newScore)
+        viewModel.setGameStateForTest(gameState)
+        testDispatcher.scheduler.advanceUntilIdle() // Ensure the score collector runs
+
+        // Assert
+        assertEquals(newScore, viewModel.currentSessionHighScore.value)
     }
 }

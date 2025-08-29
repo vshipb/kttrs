@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 data class GameState(
@@ -83,6 +84,15 @@ class GameViewModel(private val settingsDataStore: SettingsDataStore) : ViewMode
         initialValue = true
     )
 
+    val highScore: StateFlow<Int> = settingsDataStore.highScore.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = 0
+    )
+
+    private val _currentSessionHighScore = MutableStateFlow(0) // Initialize with 0, will be updated from persisted high score
+    val currentSessionHighScore: StateFlow<Int> = _currentSessionHighScore.asStateFlow()
+
     private var gameJob: Job? = null
     private var lastMoveIsRotation = false
     private var lockDelayJob: Job? = null
@@ -96,6 +106,22 @@ class GameViewModel(private val settingsDataStore: SettingsDataStore) : ViewMode
         viewModelScope.launch {
             _gameState.collectLatest { gameState ->
                 _gameState.value = gameState.copy(ghostPiece = calculateGhostPiecePosition(gameState.currentPiece, gameState.board))
+            }
+        }
+        // Observe score changes to update current session high score
+        viewModelScope.launch {
+            _gameState.map { it.score }.collectLatest { currentScore ->
+                if (currentScore > _currentSessionHighScore.value) {
+                    _currentSessionHighScore.value = currentScore
+                }
+            }
+        }
+        // Observe persisted high score to initialize current session high score
+        viewModelScope.launch {
+            highScore.collectLatest { persistedHighScore ->
+                if (persistedHighScore > _currentSessionHighScore.value) {
+                    _currentSessionHighScore.value = persistedHighScore
+                }
             }
         }
         startGameLoop()
@@ -370,46 +396,53 @@ class GameViewModel(private val settingsDataStore: SettingsDataStore) : ViewMode
             }
         }
 
-        if (clearedLinesIndices.isNotEmpty() || scoreToAdd > 0) {
-            viewModelScope.launch {
-                _gameState.value = _gameState.value.copy(
-                    board = newBoard,
-                    clearingLines = clearedLinesIndices
-                )
-                delay(200)
+        viewModelScope.launch {
+            updateStateAfterPiecePlaced(newBoard, clearedLinesIndices, scoreToAdd)
+        }
+    }
 
-                val boardAfterClearing = newBoard.filterIndexed { index, _ -> !clearedLinesIndices.contains(index) }.toTypedArray()
-                val newRows = Array(clearedLinesIndices.size) { IntArray(BOARD_WIDTH) }
-                val finalBoard = newRows + boardAfterClearing
-
-                val newScore = _gameState.value.score + scoreToAdd
-                val newLinesCleared = _gameState.value.linesCleared + clearedLinesIndices.size
-                val newSpeed = 500L - (newLinesCleared / 10) * 50
-                val newPiece = _gameState.value.nextPiece
-                val isGameOver = !isValidPosition(newPiece, finalBoard)
-
-                _gameState.value = _gameState.value.copy(
-                    board = finalBoard,
-                    score = newScore,
-                    currentPiece = newPiece,
-                    nextPiece = randomPiece(),
-                    gameOver = _gameState.value.gameOver || isGameOver,
-                    linesCleared = newLinesCleared,
-                    gameSpeed = newSpeed.coerceAtLeast(100L),
-                    canHold = true,
-                    clearingLines = emptyList()
-                )
-            }
-        } else {
-            val newPiece = _gameState.value.nextPiece
-            val isGameOver = !isValidPosition(newPiece, newBoard)
+    private suspend fun updateStateAfterPiecePlaced(
+        newBoard: Array<IntArray>,
+        clearedLinesIndices: List<Int>,
+        scoreToAdd: Int
+    ) {
+        val boardForNextPiece: Array<IntArray>
+        if (clearedLinesIndices.isNotEmpty()) {
             _gameState.value = _gameState.value.copy(
                 board = newBoard,
-                currentPiece = newPiece,
-                nextPiece = randomPiece(),
-                gameOver = _gameState.value.gameOver || isGameOver,
-                canHold = true
+                clearingLines = clearedLinesIndices
             )
+            delay(200)
+            val boardAfterClearing = newBoard.filterIndexed { index, _ -> !clearedLinesIndices.contains(index) }.toTypedArray()
+            val newRows = Array(clearedLinesIndices.size) { IntArray(BOARD_WIDTH) }
+            boardForNextPiece = newRows + boardAfterClearing
+        } else {
+            boardForNextPiece = newBoard
+        }
+
+        val newScore = _gameState.value.score + scoreToAdd
+        val newLinesCleared = _gameState.value.linesCleared + clearedLinesIndices.size
+        val newSpeed = 500L - (newLinesCleared / 10) * 50
+        val newPiece = _gameState.value.nextPiece
+        val isGameOver = !isValidPosition(newPiece, boardForNextPiece)
+
+        _gameState.value = _gameState.value.copy(
+            board = boardForNextPiece,
+            score = newScore,
+            currentPiece = newPiece,
+            nextPiece = randomPiece(),
+            gameOver = _gameState.value.gameOver || isGameOver,
+            linesCleared = newLinesCleared,
+            gameSpeed = newSpeed.coerceAtLeast(100L),
+            canHold = true,
+            clearingLines = emptyList()
+        )
+
+        if (isGameOver) {
+            val currentHighScore = highScore.value
+            if (newScore > currentHighScore) {
+                settingsDataStore.saveHighScore(newScore)
+            }
         }
     }
 

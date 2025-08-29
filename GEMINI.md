@@ -40,5 +40,6 @@ This project uses the Gradle wrapper for building and running.
 *   **UI:** The project uses Jetpack Compose for building the user interface. Follow Material Design 3 guidelines for UI components and styling.
 *   **Dependencies:** Dependencies are managed using the `libs.versions.toml` file. Use this file to update or add new dependencies.
 *   **Testing:** The project is set up for both unit tests (in `src/test`) and instrumented tests (in `src/androidTest`). Write tests for new features and bug fixes.
+*   **Comments:** Add code comments sparingly. Focus on *why* something is done, especially for complex logic, rather than *what* is done. Only add high-value comments if necessary for clarity or if requested by the user. Do not edit comments that are separate from the code you are changing. *NEVER* talk to the user or describe your changes through comments.
 *   **Committing:** Do not commit changes without explicit instruction from the user.
 *   **Process:** Do not start implementing changes until all details have been discussed and agreed upon.
