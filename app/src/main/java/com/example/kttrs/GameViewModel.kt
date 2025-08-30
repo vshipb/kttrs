@@ -303,7 +303,7 @@ class GameViewModel(private val settingsDataStore: SettingsDataStore) : ViewMode
         for (kick in kicks) {
             val newPiece = piece.copy(
                 x = piece.x + kick.first,
-                y = piece.y + kick.second, // SRS y-axis is inverted from our board y-axis
+                y = piece.y - kick.second, // SRS y-axis is inverted from our board y-axis
                 rotation = newRotation
             )
             if (isValidPosition(newPiece)) {

@@ -20,8 +20,6 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import com.example.kttrs.GameConstants.BOARD_HEIGHT
 import com.example.kttrs.GameConstants.BOARD_WIDTH
-import com.example.kttrs.TestPieceSpec
-import org.junit.Ignore
 
 @ExperimentalCoroutinesApi
 class GameViewModelTest {
@@ -245,7 +243,6 @@ class GameViewModelTest {
         )
         viewModel.setGameStateForTest(gameState)
 
-        // Call movePiece to trigger placePiece (move down by 1 to trigger placement)
         viewModel.placePiece()
         testDispatcher.scheduler.advanceUntilIdle()
 
@@ -440,16 +437,14 @@ class GameViewModelTest {
     }
 
     @Test
-    @Ignore
-    fun `tSpin single should clear one line and add 400 to score`() = runTest {
+    fun `T-Spin Mini Single should clear one line and add 100 to score`() = runTest {
         // Arrange
         val board = Array(BOARD_HEIGHT) { IntArray(BOARD_WIDTH) }
         // Create a T-Spin setup
         board[20] = intArrayOf(0, 0, 1, 1, 1, 1, 1, 1, 1, 1)
         board[21] = intArrayOf(0, 0, 0, 1, 1, 1, 1, 1, 1, 1)
 
-//      val tPiece = Piece(spec = PieceType.T, x = 0, y = 19, rotation = 1)
-        val tPiece = Piece(spec = PieceType.T, x = 5, y = 15, rotation = 1)
+        val tPiece = Piece(spec = PieceType.T, x = -1, y = 19, rotation = 1)
 
         val gameState = viewModel.gameState.value.copy(
             board = board,
@@ -459,13 +454,7 @@ class GameViewModelTest {
         )
         viewModel.setGameStateForTest(gameState)
         printBoardState()
-        viewModel.rotatePieceRight()
-        printBoardState()
-        viewModel.rotatePieceRight()
-        printBoardState()
-        viewModel.rotatePieceRight()
-        printBoardState()
-        viewModel.rotatePieceRight()
+        viewModel.rotatePieceLeft()
         printBoardState()
         viewModel.placePiece()
         printBoardState()
@@ -473,7 +462,7 @@ class GameViewModelTest {
         printBoardState()
 
         // Assert
-        assertEquals(400, viewModel.gameState.value.score)
+        assertEquals(100, viewModel.gameState.value.score)
         assertEquals(1, viewModel.gameState.value.linesCleared)
     }
 
@@ -530,6 +519,7 @@ class GameViewModelTest {
             }
             println()
         }
+        println("Piece X: ${currentPiece.x}, Y: ${currentPiece.y}, Rotation: ${currentPiece.rotation}")
         println("--------------------")
     }
 }
