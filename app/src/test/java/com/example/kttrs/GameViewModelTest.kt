@@ -20,6 +20,8 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import com.example.kttrs.GameConstants.BOARD_HEIGHT
 import com.example.kttrs.GameConstants.BOARD_WIDTH
+import com.example.kttrs.TestPieceSpec
+import org.junit.Ignore
 
 @ExperimentalCoroutinesApi
 class GameViewModelTest {
@@ -435,5 +437,99 @@ class GameViewModelTest {
 
         // Assert
         assertEquals(newScore, viewModel.topScore.value)
+    }
+
+    @Test
+    @Ignore
+    fun `tSpin single should clear one line and add 400 to score`() = runTest {
+        // Arrange
+        val board = Array(BOARD_HEIGHT) { IntArray(BOARD_WIDTH) }
+        // Create a T-Spin setup
+        board[20] = intArrayOf(0, 0, 1, 1, 1, 1, 1, 1, 1, 1)
+        board[21] = intArrayOf(0, 0, 0, 1, 1, 1, 1, 1, 1, 1)
+
+//      val tPiece = Piece(spec = PieceType.T, x = 0, y = 19, rotation = 1)
+        val tPiece = Piece(spec = PieceType.T, x = 5, y = 15, rotation = 1)
+
+        val gameState = viewModel.gameState.value.copy(
+            board = board,
+            currentPiece = tPiece,
+            score = 0,
+            linesCleared = 0,
+        )
+        viewModel.setGameStateForTest(gameState)
+        printBoardState()
+        viewModel.rotatePieceRight()
+        printBoardState()
+        viewModel.rotatePieceRight()
+        printBoardState()
+        viewModel.rotatePieceRight()
+        printBoardState()
+        viewModel.rotatePieceRight()
+        printBoardState()
+        viewModel.placePiece()
+        printBoardState()
+        testDispatcher.scheduler.advanceUntilIdle()
+        printBoardState()
+
+        // Assert
+        assertEquals(400, viewModel.gameState.value.score)
+        assertEquals(1, viewModel.gameState.value.linesCleared)
+    }
+
+    private fun printBoardState() {
+        val board = viewModel.gameState.value.board
+        val currentPiece = viewModel.gameState.value.currentPiece
+        val tempBoard = board.map { it.clone() }.toTypedArray()
+
+        // Overlay current piece on the board
+        val shape = currentPiece.shape
+        for (y in shape.indices) {
+            for (x in shape[y].indices) {
+                if (shape[y][x] == 1) {
+                    val boardX = currentPiece.x + x
+                    val boardY = currentPiece.y + y
+                    if (boardX >= 0 && boardX < BOARD_WIDTH && boardY >= 0 && boardY < BOARD_HEIGHT) {
+                        tempBoard[boardY][boardX] = currentPiece.type?.ordinal?.plus(1) ?: 0 // Use piece type ordinal + 1 for occupied cells
+                    }
+                }
+            }
+        }
+
+        println("Board State:")
+        for (y in tempBoard.indices) {
+            for (x in tempBoard[y].indices) {
+                val cellValue = tempBoard[y][x]
+                if (cellValue == 0) {
+                    print(". ")
+                } else {
+                    // Map piece type ordinal to a letter
+                    val pieceChar = PieceType.values()[cellValue - 1].name.lowercase().first()
+                    // Check if this cell is part of the current piece
+                    var isCurrentPieceCell = false
+                    for (py in shape.indices) {
+                        for (px in shape[py].indices) {
+                            if (shape[py][px] == 1) {
+                                val boardX = currentPiece.x + px
+                                val boardY = currentPiece.y + py
+                                if (boardX == x && boardY == y) {
+                                    isCurrentPieceCell = true
+                                    break
+                                }
+                            }
+                        }
+                        if (isCurrentPieceCell) break
+                    }
+
+                    if (isCurrentPieceCell) {
+                        print("${pieceChar.uppercaseChar()} ")
+                    } else {
+                        print("$pieceChar ")
+                    }
+                }
+            }
+            println()
+        }
+        println("--------------------")
     }
 }

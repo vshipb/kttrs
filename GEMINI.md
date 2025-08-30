@@ -43,3 +43,4 @@ This project uses the Gradle wrapper for building and running.
 *   **Comments:** Add code comments sparingly. Focus on *why* something is done, especially for complex logic, rather than *what* is done. Only add high-value comments if necessary for clarity or if requested by the user. Do not edit comments that are separate from the code you are changing. *NEVER* talk to the user or describe your changes through comments.
 *   **Committing:** Do not commit changes without explicit instruction from the user.
 *   **Process:** Do not start implementing changes until all details have been discussed and agreed upon.
+*   **Agreement:** All code modifications or file operations require explicit agreement from the user before implementation.

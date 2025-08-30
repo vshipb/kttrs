@@ -303,7 +303,7 @@ class GameViewModel(private val settingsDataStore: SettingsDataStore) : ViewMode
         for (kick in kicks) {
             val newPiece = piece.copy(
                 x = piece.x + kick.first,
-                y = piece.y - kick.second, // SRS y-axis is inverted from our board y-axis
+                y = piece.y + kick.second, // SRS y-axis is inverted from our board y-axis
                 rotation = newRotation
             )
             if (isValidPosition(newPiece)) {
@@ -321,13 +321,13 @@ class GameViewModel(private val settingsDataStore: SettingsDataStore) : ViewMode
         }
     }
 
-    private fun isTSpin(piece: Piece, board: Array<IntArray>): Boolean {
+    internal fun isTSpin(piece: Piece, board: Array<IntArray>): Boolean {
         if (piece.type != PieceType.T) return false
 
         // T-Spin is defined by 3 of the 4 corners of the piece's 3x3 bounding box being occupied.
-        // The center of the T piece is at x+1, y+1 of its local coordinates.
+        // The center of the T piece is at x+1, y of its local coordinates.
         val cx = piece.x + 1
-        val cy = piece.y + 1
+        val cy = piece.y
 
         val corners = listOf(
             Pair(cx - 1, cy - 1), // Top-left
@@ -344,16 +344,17 @@ class GameViewModel(private val settingsDataStore: SettingsDataStore) : ViewMode
                 occupiedCorners++
             }
         }
-
+        System.out.println("TSpinTest: occupiedCorners: $occupiedCorners")
         return occupiedCorners >= 3
     }
 
     @VisibleForTesting
     internal fun placePiece() {
-        for (y in _gameState.value.currentPiece.shape.indices) {
-            for (x in _gameState.value.currentPiece.shape[y].indices) {
-                if (_gameState.value.currentPiece.shape[y][x] == 1) {
-                    if (_gameState.value.currentPiece.y + y < 0) {
+        val currentPiece = _gameState.value.currentPiece
+        for (y in currentPiece.shape.indices) {
+            for (x in currentPiece.shape[y].indices) {
+                if (currentPiece.shape[y][x] == 1) {
+                    if (currentPiece.y + y < 0) {
                         _gameState.value = _gameState.value.copy(gameOver = true)
                         return
                     }
@@ -459,9 +460,10 @@ class GameViewModel(private val settingsDataStore: SettingsDataStore) : ViewMode
 
     @VisibleForTesting
     internal fun isValidPosition(piece: Piece, board: Array<IntArray> = _gameState.value.board): Boolean {
-        for (y in piece.shape.indices) {
-            for (x in piece.shape[y].indices) {
-                if (piece.shape[y][x] == 1) {
+        val shape = piece.shape
+        for (y in shape.indices) {
+            for (x in shape[y].indices) {
+                if (shape[y][x] == 1) {
                     val newX = piece.x + x
                     val newY = piece.y + y
                     if (newX < 0 || newX >= BOARD_WIDTH || newY >= BOARD_HEIGHT) {
@@ -477,7 +479,7 @@ class GameViewModel(private val settingsDataStore: SettingsDataStore) : ViewMode
     }
 
     private fun randomPiece(): Piece {
-        val pieceType = PieceType.values().random()
+        val pieceType = PieceType.entries.random()
         return Piece(
             spec = pieceType,
             x = BOARD_WIDTH / 2 - 1,
