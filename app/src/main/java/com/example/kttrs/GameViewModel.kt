@@ -325,9 +325,9 @@ class GameViewModel(private val settingsDataStore: SettingsDataStore) : ViewMode
         if (piece.type != PieceType.T) return false
 
         // T-Spin is defined by 3 of the 4 corners of the piece's 3x3 bounding box being occupied.
-        // The center of the T piece is at x+1, y of its local coordinates.
+        // The center of the T piece's shape is at local (1, 1).
         val cx = piece.x + 1
-        val cy = piece.y
+        val cy = piece.y + 1
 
         val corners = listOf(
             Pair(cx - 1, cy - 1), // Top-left

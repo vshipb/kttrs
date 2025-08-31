@@ -226,8 +226,6 @@ class GameViewModelTest {
 
         val newState = viewModel.gameState.value
         assertEquals(squareShape, newState.currentPiece.shape)
-
-        
     }
 
     @Test
@@ -437,7 +435,7 @@ class GameViewModelTest {
     }
 
     @Test
-    fun `T-Spin Mini Single should clear one line and add 100 to score`() = runTest {
+    fun `T-Spin Mini Single should clear one line and add 800 to score`() = runTest {
         // Arrange
         val board = Array(BOARD_HEIGHT) { IntArray(BOARD_WIDTH) }
         // Create a T-Spin setup
@@ -462,11 +460,47 @@ class GameViewModelTest {
         printBoardState()
 
         // Assert
-        assertEquals(100, viewModel.gameState.value.score)
+        assertEquals(800, viewModel.gameState.value.score)
         assertEquals(1, viewModel.gameState.value.linesCleared)
     }
 
-    private fun printBoardState() {
+    @Test
+    fun `T-Spin Single should clear one line and add something to score`() = runTest {
+        val board = Array(BOARD_HEIGHT) { IntArray(BOARD_WIDTH) }
+
+        board[19] = intArrayOf(0,1,0,0,0,0,0,0,0,0)
+        board[20] = intArrayOf(1,1,0,0,0,1,1,1,1,1)
+        board[21] = intArrayOf(0,1,1,0,0,0,0,0,0,0)
+
+        val tPieceInitial = Piece(
+            spec = PieceType.T,
+            x = 2,
+            y = 19,
+            rotation = 1
+        )
+
+        val initialGameState = viewModel.gameState.value.copy(
+            board = board.map { it.clone() }.toTypedArray(),
+            currentPiece = tPieceInitial,
+            score = 0,
+            linesCleared = 0
+        )
+        viewModel.setGameStateForTest(initialGameState)
+        printBoardState()
+
+        viewModel.rotatePieceLeft()
+        printBoardState()
+        viewModel.placePiece()
+        printBoardState()
+        testDispatcher.scheduler.advanceUntilIdle()
+        printBoardState()
+
+        val finalState = viewModel.gameState.value
+        assertEquals( 1, finalState.linesCleared)
+        assertEquals(100, finalState.score)
+    }
+
+    private fun printBoardState(message: String = "Board State:") {
         val board = viewModel.gameState.value.board
         val currentPiece = viewModel.gameState.value.currentPiece
         val tempBoard = board.map { it.clone() }.toTypedArray()
@@ -485,7 +519,7 @@ class GameViewModelTest {
             }
         }
 
-        println("Board State:")
+        println(message)
         for (y in tempBoard.indices) {
             for (x in tempBoard[y].indices) {
                 val cellValue = tempBoard[y][x]
@@ -493,7 +527,7 @@ class GameViewModelTest {
                     print(". ")
                 } else {
                     // Map piece type ordinal to a letter
-                    val pieceChar = PieceType.values()[cellValue - 1].name.lowercase().first()
+                    val pieceChar = PieceType.entries[cellValue - 1].name.lowercase().first()
                     // Check if this cell is part of the current piece
                     var isCurrentPieceCell = false
                     for (py in shape.indices) {
