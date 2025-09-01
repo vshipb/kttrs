@@ -4,23 +4,31 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <!-- S-Piece (Green) -->
-    <path
-        android:fillColor="#008000"
-        android:pathData="M 27,10 h 15 v 15 h -15 z M 45,10 h 15 v 15 h -15 z M 9,28 h 15 v 15 h -15 z M 27,28 h 15 v 15 h -15 z" />
+    <group
+        android:scaleX="0.75"
+        android:scaleY="0.75"
+        android:pivotX="54"
+        android:pivotY="54">
 
-    <!-- L-Piece (Orange) -->
-    <path
-        android:fillColor="#FFA500"
-        android:pathData="M 63,10 h 15 v 15 h -15 z M 63,28 h 15 v 15 h -15 z M 63,46 h 15 v 15 h -15 z M 45,46 h 15 v 15 h -15 z" />
+        <!-- S-Piece (Green) -->
+        <path
+            android:fillColor="#008000"
+            android:pathData="M 27,10 h 15 v 15 h -15 z M 45,10 h 15 v 15 h -15 z M 9,28 h 15 v 15 h -15 z M 27,28 h 15 v 15 h -15 z" />
 
-    <!-- T-Piece (Purple) -->
-    <path
-        android:fillColor="#800080"
-        android:pathData="M 9,64 h 15 v 15 h -15 z M 27,64 h 15 v 15 h -15 z M 45,64 h 15 v 15 h -15 z M 27,82 h 15 v 15 h -15 z" />
+        <!-- L-Piece (Orange) -->
+        <path
+            android:fillColor="#FFA500"
+            android:pathData="M 63,10 h 15 v 15 h -15 z M 63,28 h 15 v 15 h -15 z M 63,46 h 15 v 15 h -15 z M 45,46 h 15 v 15 h -15 z" />
 
-    <!-- Next I-Piece (Cyan) -->
-    <path
-        android:fillColor="#00FFFF"
-        android:pathData="M 84,19 h 15 v 15 h -15 z M 84,37 h 15 v 15 h -15 z M 84,55 h 15 v 15 h -15 z M 84,73 h 15 v 15 h -15 z" />
+        <!-- T-Piece (Purple) -->
+        <path
+            android:fillColor="#800080"
+            android:pathData="M 9,64 h 15 v 15 h -15 z M 27,64 h 15 v 15 h -15 z M 45,64 h 15 v 15 h -15 z M 27,82 h 15 v 15 h -15 z" />
+
+        <!-- Next I-Piece (Cyan) -->
+        <path
+            android:fillColor="#00FFFF"
+            android:pathData="M 84,19 h 15 v 15 h -15 z M 84,37 h 15 v 15 h -15 z M 84,55 h 15 v 15 h -15 z M 84,73 h 15 v 15 h -15 z" />
+
+    </group>
 </vector>
