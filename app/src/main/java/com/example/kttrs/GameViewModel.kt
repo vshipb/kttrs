@@ -98,6 +98,7 @@ class GameViewModel(private val settingsDataStore: SettingsDataStore) : ViewMode
     private var lockDelayJob: Job? = null
 
     init {
+        SevenBagRandomizer.restart()
         viewModelScope.launch {
             settingsDataStore.controlMode.collect {
                 _gameState.value = _gameState.value.copy(controlMode = it)
@@ -128,6 +129,7 @@ class GameViewModel(private val settingsDataStore: SettingsDataStore) : ViewMode
     }
 
     fun restartGame() {
+        SevenBagRandomizer.restart()
         _gameState.value = GameState(currentPiece = randomPiece(), nextPiece = randomPiece())
         startGameLoop()
     }
@@ -479,7 +481,7 @@ class GameViewModel(private val settingsDataStore: SettingsDataStore) : ViewMode
     }
 
     private fun randomPiece(): Piece {
-        val pieceType = PieceType.entries.random()
+        val pieceType = SevenBagRandomizer.nextPiece()
         return Piece(
             spec = pieceType,
             x = BOARD_WIDTH / 2 - 1,
