@@ -1,4 +1,4 @@
-package com.example.kttrs.ui.game
+package vsh.kttrs.ui.game
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -10,15 +10,15 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
-import com.example.kttrs.GameConstants
-import com.example.kttrs.Piece
-import com.example.kttrs.PieceType
-import com.example.kttrs.drawableResId
-import com.example.kttrs.shape
+import vsh.kttrs.model.GameConstants
+import vsh.kttrs.model.Piece
+import vsh.kttrs.model.PieceType
+import vsh.kttrs.model.drawableResId
+import vsh.kttrs.model.shape
 import kotlin.math.min
 
 @Composable
@@ -30,25 +30,19 @@ fun GameBoard(
     clearingLines: List<Int>,
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
+    val resources = LocalResources.current
     // Load ImageBitmaps outside Canvas scope
-    val blockImages = remember(PieceType.values()) {
-        PieceType.values().map {
-            ImageBitmap.Companion.imageResource(
-                context.resources,
-                it.drawableResId
-            )
+    val blockImages = remember(PieceType.entries.toTypedArray()) {
+        PieceType.entries.map {
+            ImageBitmap.Companion.imageResource(resources, it.drawableResId)
         }
     }
     val currentPieceImageBitmap = remember(currentPiece.drawableResId) {
-        ImageBitmap.Companion.imageResource(context.resources, currentPiece.drawableResId)
+        ImageBitmap.Companion.imageResource(resources, currentPiece.drawableResId)
     }
     val ghostPieceImageBitmap = remember(ghostPiece?.drawableResId) {
         ghostPiece?.drawableResId?.let {
-            ImageBitmap.Companion.imageResource(
-                context.resources,
-                it
-            )
+            ImageBitmap.Companion.imageResource(resources, it)
         }
     }
 

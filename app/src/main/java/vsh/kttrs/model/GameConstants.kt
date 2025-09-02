@@ -1,4 +1,4 @@
-package com.example.kttrs
+package vsh.kttrs.model
 
 object GameConstants {
     const val BOARD_WIDTH = 10

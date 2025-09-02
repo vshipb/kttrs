@@ -9,7 +9,7 @@ This is an Android application named "kttrs" built with Kotlin and Jetpack Compo
 *   **Language:** Kotlin
 *   **UI Toolkit:** Jetpack Compose
 *   **Build System:** Gradle
-*   **Package Name:** `com.example.kttrs`
+*   **Package Name:** `vsh.kttrs`
 *   **Main Entry Point:** `MainActivity`
 
 ## Building and Running

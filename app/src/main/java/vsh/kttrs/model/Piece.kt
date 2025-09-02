@@ -1,4 +1,6 @@
-package com.example.kttrs
+package vsh.kttrs.model
+
+import vsh.kttrs.R
 
 interface PieceSpec {
     fun getShapeForRotation(rotationIndex: Int): List<List<Int>>
@@ -23,7 +25,7 @@ enum class PieceType(
             listOf(listOf(0,0,0,0), listOf(0,0,0,0), listOf(1,1,1,1), listOf(0,0,0,0)),
             listOf(listOf(0,1,0,0), listOf(0,1,0,0), listOf(0,1,0,0), listOf(0,1,0,0))
         ),
-        R.drawable.sblock_i
+        R.drawable.block_i
     ),
     O(
         listOf(
@@ -33,7 +35,7 @@ enum class PieceType(
             listOf(listOf(1,1), listOf(1,1)),
             listOf(listOf(1,1), listOf(1,1))
         ),
-        R.drawable.sblock_o
+        R.drawable.block_o
     ),
     T(
         listOf(
@@ -42,7 +44,7 @@ enum class PieceType(
             listOf(listOf(0,0,0), listOf(1,1,1), listOf(0,1,0)),
             listOf(listOf(0,1,0), listOf(1,1,0), listOf(0,1,0))
         ),
-        R.drawable.sblock_t
+        R.drawable.block_t
     ),
     S(
         listOf(
@@ -51,7 +53,7 @@ enum class PieceType(
             listOf(listOf(0,0,0), listOf(0,1,1), listOf(1,1,0)),
             listOf(listOf(1,0,0), listOf(1,1,0), listOf(0,1,0))
         ),
-        R.drawable.sblock_s
+        R.drawable.block_s
     ),
     Z(
         listOf(
@@ -60,7 +62,7 @@ enum class PieceType(
             listOf(listOf(0,0,0), listOf(1,1,0), listOf(0,1,1)),
             listOf(listOf(0,1,0), listOf(1,1,0), listOf(1,0,0))
         ),
-        R.drawable.sblock_z
+        R.drawable.block_z
     ),
     J(
         listOf(
@@ -69,7 +71,7 @@ enum class PieceType(
             listOf(listOf(0,0,0), listOf(1,1,1), listOf(0,0,1)),
             listOf(listOf(0,1,0), listOf(0,1,0), listOf(1,1,0))
         ),
-        R.drawable.sblock_j
+        R.drawable.block_j
     ),
     L(
         listOf(
@@ -78,7 +80,7 @@ enum class PieceType(
             listOf(listOf(0,0,0), listOf(1,1,1), listOf(1,0,0)),
             listOf(listOf(1,1,0), listOf(0,1,0), listOf(0,1,0))
         ),
-        R.drawable.sblock_l
+        R.drawable.block_l
     );
 
     override fun getShapeForRotation(rotationIndex: Int): List<List<Int>> {

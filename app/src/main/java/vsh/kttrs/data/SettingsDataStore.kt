@@ -1,5 +1,5 @@
 
-package com.example.kttrs.data
+package vsh.kttrs.data
 
 import android.content.Context
 import androidx.datastore.core.DataStore
@@ -9,9 +9,9 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
-import com.example.kttrs.ui.ControlMode
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import vsh.kttrs.ui.ControlMode
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
 

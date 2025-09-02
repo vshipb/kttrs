@@ -1,4 +1,4 @@
-package com.example.kttrs.ui.game
+package vsh.kttrs.ui.game
 
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -42,11 +42,11 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.kttrs.GameViewModel
-import com.example.kttrs.GameViewModelFactory
-import com.example.kttrs.data.SettingsDataStore
-import com.example.kttrs.ui.ControlMode
-import com.example.kttrs.ui.SettingsScreen
+import vsh.kttrs.GameViewModelFactory
+import vsh.kttrs.data.SettingsDataStore
+import vsh.kttrs.model.GameViewModel
+import vsh.kttrs.ui.ControlMode
+import vsh.kttrs.ui.SettingsScreen
 import kotlin.math.abs
 
 @Composable

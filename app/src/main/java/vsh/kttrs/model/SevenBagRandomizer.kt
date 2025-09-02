@@ -1,4 +1,4 @@
-package com.example.kttrs
+package vsh.kttrs.model
 
 object SevenBagRandomizer {
     private var bag = mutableListOf<PieceType>()

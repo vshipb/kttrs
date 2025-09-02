@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.kttrs"
+    namespace = "vsh.kttrs"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.kttrs"
+        applicationId = "vsh.kttrs"
         minSdk = 29
         targetSdk = 36
         versionCode = 1
@@ -31,9 +31,9 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-    kotlinOptions {
-        jvmTarget = "11"
-    }
+//    kotlinOptions {
+//        jvmTarget = "11"
+//    }
     buildFeatures {
         compose = true
     }
@@ -45,7 +45,9 @@ android {
         }
     }
 }
-
+kotlin {
+    jvmToolchain(11) // Or the desired Java version
+}
 dependencies {
 
     implementation(libs.androidx.core.ktx)

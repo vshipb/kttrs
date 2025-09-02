@@ -1,4 +1,4 @@
-package com.example.kttrs.ui.game
+package vsh.kttrs.ui.game
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
@@ -7,22 +7,22 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
-import com.example.kttrs.Piece
-import com.example.kttrs.drawableResId
-import com.example.kttrs.shape
+import vsh.kttrs.model.Piece
+import vsh.kttrs.model.drawableResId
+import vsh.kttrs.model.shape
 import kotlin.math.min
 
 @Composable
-fun PiecePreview(piece: Piece?, modifier: Modifier = Modifier.Companion) {
+fun PiecePreview(piece: Piece?, modifier: Modifier = Modifier) {
     Box(modifier = modifier) {
         if (piece != null) {
-            val context = LocalContext.current
+            val resources = LocalResources.current
             val imageBitmap = remember(piece.drawableResId) {
-                ImageBitmap.Companion.imageResource(context.resources, piece.drawableResId)
+                ImageBitmap.Companion.imageResource(resources, piece.drawableResId)
             }
             Canvas(modifier = Modifier.Companion.fillMaxSize()) {
                 val cellSize = min(size.width / 4, size.height / 4)

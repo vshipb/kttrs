@@ -1,4 +1,7 @@
-package com.example.kttrs
+package vsh.kttrs
+
+import vsh.kttrs.model.PieceSpec
+import vsh.kttrs.model.PieceType
 
 data class TestPieceSpec(
     val shape: List<List<Int>>, // 'override' removed as 'shape' is not in PieceSpec interface

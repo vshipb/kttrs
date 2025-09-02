@@ -1,24 +1,23 @@
-package com.example.kttrs
+package vsh.kttrs.model
 
 import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.kttrs.data.SettingsDataStore
-import com.example.kttrs.ui.ControlMode
-import com.example.kttrs.GameConstants.BOARD_HEIGHT
-import com.example.kttrs.GameConstants.BOARD_WIDTH
-
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import vsh.kttrs.data.SettingsDataStore
+import vsh.kttrs.model.GameConstants.BOARD_HEIGHT
+import vsh.kttrs.model.GameConstants.BOARD_WIDTH
+import vsh.kttrs.ui.ControlMode
 
 data class GameState(
     val board: Array<IntArray> = Array(BOARD_HEIGHT) { IntArray(BOARD_WIDTH) },
@@ -346,7 +345,7 @@ class GameViewModel(private val settingsDataStore: SettingsDataStore) : ViewMode
                 occupiedCorners++
             }
         }
-        System.out.println("TSpinTest: occupiedCorners: $occupiedCorners")
+        println("TSpinTest: occupiedCorners: $occupiedCorners")
         return occupiedCorners >= 3
     }
 
@@ -381,16 +380,15 @@ class GameViewModel(private val settingsDataStore: SettingsDataStore) : ViewMode
         }
 
         val clearedLinesIndices = getClearedLines(newBoard)
-        val scoreToAdd: Int
 
-        if (isTSpinMove) {
-            scoreToAdd = when (clearedLinesIndices.size) {
+        val scoreToAdd: Int = if (isTSpinMove) {
+            when (clearedLinesIndices.size) {
                 1 -> 800  // T-Spin Single
                 2 -> 1200 // T-Spin Double
                 else -> 400 // T-Spin
             }
         } else {
-            scoreToAdd = when (clearedLinesIndices.size) {
+            when (clearedLinesIndices.size) {
                 1 -> 100
                 2 -> 300
                 3 -> 500

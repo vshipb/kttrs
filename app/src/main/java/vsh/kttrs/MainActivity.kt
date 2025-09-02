@@ -1,17 +1,18 @@
-package com.example.kttrs
+package vsh.kttrs
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.example.kttrs.data.SettingsDataStore
-import com.example.kttrs.ui.game.TetrisGame
-import com.example.kttrs.ui.theme.AppTypography
+import vsh.kttrs.data.SettingsDataStore
+import vsh.kttrs.model.GameViewModel
+import vsh.kttrs.ui.game.TetrisGame
+import vsh.kttrs.ui.theme.AppTypography
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
