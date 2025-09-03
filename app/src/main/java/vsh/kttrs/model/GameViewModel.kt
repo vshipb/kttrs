@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import vsh.kttrs.data.SettingsDataStore
 import vsh.kttrs.model.GameConstants.BOARD_HEIGHT
@@ -159,9 +160,10 @@ class GameViewModel(
 
     private fun startGameLoop() {
         gameJob?.cancel()
-        gameJob = viewModelScope.launch(gameLoopDispatcher) { // Используем внедренный диспетчер
-            while (true) {
+        gameJob = viewModelScope.launch(gameLoopDispatcher) {
+            while (isActive) {
                 delay(_gameState.value.gameSpeed)
+                if (!isActive) break
                 if (!_gameState.value.gameOver) {
                     // Gravity tick
                     val piece = _gameState.value.currentPiece
@@ -173,7 +175,7 @@ class GameViewModel(
                         // Cannot move down, start/continue lock delay
                         startLockDelay()
                     }
-                }  else break
+                } else break
             }
         }
     }
