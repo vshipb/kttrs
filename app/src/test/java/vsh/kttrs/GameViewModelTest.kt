@@ -3,7 +3,8 @@ package vsh.kttrs
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.TestCoroutineScheduler
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
@@ -30,8 +31,8 @@ import vsh.kttrs.ui.ControlMode
 @ExperimentalCoroutinesApi
 class GameViewModelTest {
 
-    private val testDispatcher = UnconfinedTestDispatcher()
-
+    private val testScheduler = TestCoroutineScheduler()
+    private val testDispatcher = StandardTestDispatcher(testScheduler)
     private lateinit var viewModel: GameViewModel
     private val settingsDataStore: SettingsDataStore = mock()
 
