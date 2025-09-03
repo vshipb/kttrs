@@ -3,6 +3,7 @@ package vsh.kttrs.model
 import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -72,7 +73,13 @@ data class GameState(
     }
 }
 
-class GameViewModel(private val settingsDataStore: SettingsDataStore) : ViewModel() {
+class GameViewModel(
+    private val settingsDataStore: SettingsDataStore,
+    private val gameLoopDispatcher: CoroutineDispatcher = Dispatchers.Default
+) : ViewModel() {
+    companion object {
+        internal const val LINE_CLEAR_DELAY_MS = 500L
+    }
 
     private val _gameState = MutableStateFlow(GameState(currentPiece = randomPiece(), nextPiece = randomPiece()))
     val gameState: StateFlow<GameState> = _gameState.asStateFlow()
@@ -92,7 +99,7 @@ class GameViewModel(private val settingsDataStore: SettingsDataStore) : ViewMode
     private val _topScore = MutableStateFlow(0) // Initialize with 0, will be updated from persisted high score
     val topScore: StateFlow<Int> = _topScore.asStateFlow()
 
-    private var gameJob: Job? = null
+    internal var gameJob: Job? = null
     private var lastMoveIsRotation = false
     private var lockDelayJob: Job? = null
 
@@ -152,7 +159,7 @@ class GameViewModel(private val settingsDataStore: SettingsDataStore) : ViewMode
 
     private fun startGameLoop() {
         gameJob?.cancel()
-        gameJob = viewModelScope.launch(Dispatchers.Default) {
+        gameJob = viewModelScope.launch(gameLoopDispatcher) { // Используем внедренный диспетчер
             while (true) {
                 delay(_gameState.value.gameSpeed)
                 if (!_gameState.value.gameOver) {
@@ -166,7 +173,7 @@ class GameViewModel(private val settingsDataStore: SettingsDataStore) : ViewMode
                         // Cannot move down, start/continue lock delay
                         startLockDelay()
                     }
-                }
+                }  else break
             }
         }
     }
@@ -175,7 +182,7 @@ class GameViewModel(private val settingsDataStore: SettingsDataStore) : ViewMode
         if (lockDelayJob?.isActive == true) return // Lock delay already active
 
         lockDelayJob = viewModelScope.launch {
-            delay(500) // Lock delay duration (e.g., 500ms)
+            delay(LINE_CLEAR_DELAY_MS)
             // Check if piece is still on ground before placing
             val piece = _gameState.value.currentPiece
             if (!isValidPosition(piece.copy(y = piece.y + 1))) {
