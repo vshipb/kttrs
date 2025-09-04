@@ -82,7 +82,12 @@ class GameViewModel(
         internal const val LINE_CLEAR_DELAY_MS = 500L
     }
 
-    private val _gameState = MutableStateFlow(GameState(currentPiece = randomPiece(), nextPiece = randomPiece()))
+    private fun createNewGameState(): GameState {
+        SevenBagRandomizer.restart()
+        return GameState(currentPiece = randomPiece(), nextPiece = randomPiece())
+    }
+
+    private val _gameState = MutableStateFlow(createNewGameState())
     val gameState: StateFlow<GameState> = _gameState.asStateFlow()
 
     val showGhostPiece: StateFlow<Boolean> = settingsDataStore.showGhostPiece.stateIn(
@@ -105,7 +110,6 @@ class GameViewModel(
     private var lockDelayJob: Job? = null
 
     init {
-        SevenBagRandomizer.restart()
         viewModelScope.launch {
             settingsDataStore.controlMode.collect {
                 _gameState.value = _gameState.value.copy(controlMode = it)
@@ -136,8 +140,7 @@ class GameViewModel(
     }
 
     fun restartGame() {
-        SevenBagRandomizer.restart()
-        _gameState.value = GameState(currentPiece = randomPiece(), nextPiece = randomPiece())
+        _gameState.value = createNewGameState()
         startGameLoop()
     }
 
