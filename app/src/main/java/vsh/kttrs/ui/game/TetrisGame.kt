@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.CompareArrows
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
@@ -38,6 +39,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -48,6 +50,25 @@ import vsh.kttrs.model.GameViewModel
 import vsh.kttrs.ui.ControlMode
 import vsh.kttrs.ui.SettingsScreen
 import kotlin.math.abs
+
+@Composable
+private fun ControlButton(
+    onClick: () -> Unit,
+    imageVector: ImageVector,
+    contentDescription: String
+) {
+    OutlinedButton(
+        onClick = onClick,
+        border = BorderStroke(1.dp, Color.White)
+    ) {
+        Icon(
+            imageVector = imageVector,
+            contentDescription = contentDescription,
+            modifier = Modifier.size(48.dp),
+            tint = Color.White
+        )
+    }
+}
 
 @Composable
 fun TetrisGame(gameViewModel: GameViewModel = viewModel(
@@ -214,65 +235,51 @@ fun TetrisGame(gameViewModel: GameViewModel = viewModel(
                 ) {
                     Column(horizontalAlignment = Alignment.Companion.CenterHorizontally) {
                         Row {
-                            OutlinedButton(onClick = { gameViewModel.rotatePieceLeft() }) {
-                                Icon(
-                                    Icons.AutoMirrored.Filled.RotateLeft,
-                                    contentDescription = "Rotate Left",
-                                    modifier = Modifier.Companion.size(48.dp)
-                                )
-                            }
+                            ControlButton(
+                                onClick = { gameViewModel.rotatePieceLeft() },
+                                imageVector = Icons.AutoMirrored.Filled.RotateLeft,
+                                contentDescription = "Rotate Left"
+                            )
                             Spacer(modifier = Modifier.Companion.width(8.dp))
-                            OutlinedButton(onClick = { gameViewModel.rotatePieceRight() }) {
-                                Icon(
-                                    Icons.AutoMirrored.Filled.RotateRight,
-                                    contentDescription = "Rotate Right",
-                                    modifier = Modifier.Companion.size(48.dp)
-                                )
-                            }
+                            ControlButton(
+                                onClick = { gameViewModel.rotatePieceRight() },
+                                imageVector = Icons.AutoMirrored.Filled.RotateRight,
+                                contentDescription = "Rotate Right"
+                            )
                         }
                         Spacer(modifier = Modifier.Companion.height(8.dp))
                         Row {
-                            OutlinedButton(onClick = { gameViewModel.movePiece(-1) }) {
-                                Icon(
-                                    Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-                                    contentDescription = "Left",
-                                    modifier = Modifier.Companion.size(48.dp)
-                                )
-                            }
+                            ControlButton(
+                                onClick = { gameViewModel.movePiece(-1) },
+                                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                                contentDescription = "Left"
+                            )
                             Spacer(modifier = Modifier.Companion.width(8.dp))
-                            OutlinedButton(onClick = { gameViewModel.movePiece(1) }) {
-                                Icon(
-                                    Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                                    contentDescription = "Right",
-                                    modifier = Modifier.Companion.size(48.dp)
-                                )
-                            }
-                        }
-                        Spacer(modifier = Modifier.Companion.height(8.dp))
-                        OutlinedButton(onClick = { gameViewModel.hardDrop() }) {
-                            Icon(
-                                Icons.Filled.KeyboardDoubleArrowDown,
-                                contentDescription = "Hard Drop",
-                                modifier = Modifier.Companion.size(48.dp)
+                            ControlButton(
+                                onClick = { gameViewModel.movePiece(1) },
+                                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                                contentDescription = "Right"
                             )
                         }
+                        Spacer(modifier = Modifier.Companion.height(8.dp))
+                        ControlButton(
+                            onClick = { gameViewModel.hardDrop() },
+                            imageVector = Icons.Filled.KeyboardDoubleArrowDown,
+                            contentDescription = "Hard Drop"
+                        )
                     }
                     Column(horizontalAlignment = Alignment.Companion.CenterHorizontally) {
-                        OutlinedButton(onClick = { gameViewModel.holdPiece() }) {
-                            Icon(
-                                Icons.AutoMirrored.Filled.CompareArrows,
-                                contentDescription = "Hold",
-                                modifier = Modifier.Companion.size(48.dp)
-                            )
-                        }
+                        ControlButton(
+                            onClick = { gameViewModel.holdPiece() },
+                            imageVector = Icons.AutoMirrored.Filled.CompareArrows,
+                            contentDescription = "Hold"
+                        )
                         Spacer(modifier = Modifier.Companion.height(8.dp))
-                        OutlinedButton(onClick = { gameViewModel.softDrop() }) {
-                            Icon(
-                                Icons.Filled.KeyboardArrowDown,
-                                contentDescription = "Soft Drop",
-                                modifier = Modifier.Companion.size(48.dp)
-                            )
-                        }
+                        ControlButton(
+                            onClick = { gameViewModel.softDrop() },
+                            imageVector = Icons.Filled.KeyboardArrowDown,
+                            contentDescription = "Soft Drop"
+                        )
                     }
                 }
             }
