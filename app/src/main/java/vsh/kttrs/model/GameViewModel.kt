@@ -161,6 +161,15 @@ class GameViewModel(
         }
     }
 
+    fun pauseGame() {
+        gameJob?.cancel()
+        lockDelayJob?.cancel()
+    }
+
+    fun resumeGame() {
+        startGameLoop()
+    }
+
     private fun startGameLoop() {
         gameJob?.cancel()
         gameJob = viewModelScope.launch(gameLoopDispatcher) {

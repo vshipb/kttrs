@@ -30,6 +30,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -60,6 +61,18 @@ fun TetrisGame(gameViewModel: GameViewModel = viewModel(
     val showGhostPiece by gameViewModel.showGhostPiece.collectAsState(initial = true)
     val topScore by gameViewModel.topScore.collectAsState()
     var showSettings by remember { mutableStateOf(false) }
+
+    val gameStarted = remember { mutableStateOf(false) }
+    LaunchedEffect(showSettings) {
+        if (gameStarted.value) {
+            if (showSettings) {
+                gameViewModel.pauseGame()
+            } else {
+                gameViewModel.resumeGame()
+            }
+        }
+        gameStarted.value = true
+    }
 
     if (showSettings) {
         AlertDialog(
