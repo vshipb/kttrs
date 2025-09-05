@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.CompareArrows
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
@@ -39,7 +38,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -50,25 +48,6 @@ import vsh.kttrs.model.GameViewModel
 import vsh.kttrs.ui.ControlMode
 import vsh.kttrs.ui.SettingsScreen
 import kotlin.math.abs
-
-@Composable
-private fun ControlButton(
-    onClick: () -> Unit,
-    imageVector: ImageVector,
-    contentDescription: String
-) {
-    OutlinedButton(
-        onClick = onClick,
-        border = BorderStroke(1.dp, Color.White)
-    ) {
-        Icon(
-            imageVector = imageVector,
-            contentDescription = contentDescription,
-            modifier = Modifier.size(48.dp),
-            tint = Color.White
-        )
-    }
-}
 
 @Composable
 fun TetrisGame(gameViewModel: GameViewModel = viewModel(
