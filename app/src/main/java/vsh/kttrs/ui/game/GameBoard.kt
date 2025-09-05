@@ -58,6 +58,25 @@ fun GameBoard(
     ) {
         val cellSize =
             min(size.width / GameConstants.BOARD_WIDTH, size.height / GameConstants.BOARD_HEIGHT)
+        val boardWidth = cellSize * GameConstants.BOARD_WIDTH
+        val boardHeight = cellSize * GameConstants.BOARD_HEIGHT
+
+        // Draw grid
+        val gridColor = Color.White.copy(alpha = 0.2f)
+        for (i in 0..GameConstants.BOARD_WIDTH) {
+            drawLine(
+                color = gridColor,
+                start = Offset(i * cellSize, 0f),
+                end = Offset(i * cellSize, boardHeight)
+            )
+        }
+        for (i in 0..GameConstants.BOARD_HEIGHT) {
+            drawLine(
+                color = gridColor,
+                start = Offset(0f, i * cellSize),
+                end = Offset(boardWidth, i * cellSize)
+            )
+        }
         val cellSizeInt = cellSize.toInt()
         // Draw board
         for (y in board.indices) {
