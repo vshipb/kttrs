@@ -16,10 +16,9 @@ A classic block-stacking game built with modern Android development tools. This 
 ## Screenshots
 
 
-| Game Screen | Game Over | Settings |
-| :---: | :---: | :---: |
-| <img width="1440" height="3120" alt="Screenshot_20250904_114231" src="https://github.com/user-attachments/assets/bb4d95f6-6c0c-40ac-96b4-9c57187b8155" /> | <img width="1440" height="3120" alt="Screenshot_20250904_114312" src="https://github.com/user-attachments/assets/28ced3c0-29d6-49d2-87e1-7f0a13451290" /> | <img width="1440" height="3120" alt="Screenshot_20250904_114351" src="https://github.com/user-attachments/assets/49ba61b2-e6d9-44aa-b39a-a96138fa5e2a" />
- |
+| Game Screen |
+| :---: |
+| <img width="540" height="1200" alt="image" src="https://github.com/user-attachments/assets/ed261a0e-6c46-46f3-ba5d-d68f6f2551a7" /> |
 
 ## Technologies Used
 
