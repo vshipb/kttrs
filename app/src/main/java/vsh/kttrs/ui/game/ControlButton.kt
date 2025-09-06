@@ -1,17 +1,18 @@
 package vsh.kttrs.ui.game
 
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -20,7 +21,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun ControlButton(
     onClick: () -> Unit,
-    imageVector: ImageVector,
+    @DrawableRes drawableId: Int,
     contentDescription: String,
     repeatable: Boolean = true
 ) {
@@ -59,11 +60,10 @@ fun ControlButton(
         interactionSource = interactionSource,
         border = BorderStroke(1.dp, Color.White)
     ) {
-        Icon(
-            imageVector = imageVector,
+        Image(
+            painter = painterResource(id = drawableId),
             contentDescription = contentDescription,
-            modifier = Modifier.size(48.dp),
-            tint = Color.White
+            modifier = Modifier.size(48.dp)
         )
     }
 }

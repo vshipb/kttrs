@@ -229,13 +229,13 @@ fun TetrisGame(gameViewModel: GameViewModel = viewModel(
                         Row {
                             ControlButton(
                                 onClick = { gameViewModel.rotatePieceLeft() },
-                                imageVector = Icons.AutoMirrored.Filled.RotateLeft,
+                                drawableId = vsh.kttrs.R.drawable.rotate_left,
                                 contentDescription = "Rotate Left"
                             )
                             Spacer(modifier = Modifier.Companion.width(8.dp))
                             ControlButton(
                                 onClick = { gameViewModel.rotatePieceRight() },
-                                imageVector = Icons.AutoMirrored.Filled.RotateRight,
+                                drawableId = vsh.kttrs.R.drawable.rotate_right,
                                 contentDescription = "Rotate Right"
                             )
                         }
@@ -243,33 +243,33 @@ fun TetrisGame(gameViewModel: GameViewModel = viewModel(
                         Row {
                             ControlButton(
                                 onClick = { gameViewModel.movePiece(-1) },
-                                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                                drawableId = vsh.kttrs.R.drawable.move_left,
                                 contentDescription = "Left"
                             )
                             Spacer(modifier = Modifier.Companion.width(8.dp))
                             ControlButton(
                                 onClick = { gameViewModel.movePiece(1) },
-                                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                                drawableId = vsh.kttrs.R.drawable.move_right,
                                 contentDescription = "Right"
                             )
                         }
                         Spacer(modifier = Modifier.Companion.height(8.dp))
                         ControlButton(
                             onClick = { gameViewModel.hardDrop() },
-                            imageVector = Icons.Filled.KeyboardDoubleArrowDown,
+                            drawableId = vsh.kttrs.R.drawable.hard_drop,
                             contentDescription = "Hard Drop"
                         )
                     }
                     Column(horizontalAlignment = Alignment.Companion.CenterHorizontally) {
                         ControlButton(
                             onClick = { gameViewModel.holdPiece() },
-                            imageVector = Icons.AutoMirrored.Filled.CompareArrows,
+                            drawableId = vsh.kttrs.R.drawable.hold,
                             contentDescription = "Hold"
                         )
                         Spacer(modifier = Modifier.Companion.height(8.dp))
                         ControlButton(
                             onClick = { gameViewModel.softDrop() },
-                            imageVector = Icons.Filled.KeyboardArrowDown,
+                            drawableId = vsh.kttrs.R.drawable.soft_drop,
                             contentDescription = "Soft Drop"
                         )
                     }
