@@ -6,7 +6,8 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -55,10 +56,10 @@ fun ControlButton(
         }
     }
 
-    OutlinedButton(
+    Button(
         onClick = { /* Handled by interaction source */ },
         interactionSource = interactionSource,
-        border = BorderStroke(1.dp, Color.White)
+        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
     ) {
         Image(
             painter = painterResource(id = drawableId),
