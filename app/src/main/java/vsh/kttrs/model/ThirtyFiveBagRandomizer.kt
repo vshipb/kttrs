@@ -1,6 +1,6 @@
 package vsh.kttrs.model
 
-object SevenBagRandomizer {
+object ThirtyFiveBagRandomizer {
     private var bag = mutableListOf<PieceType>()
 
     init {
@@ -9,7 +9,10 @@ object SevenBagRandomizer {
 
     private fun fillBag() {
         bag.clear()
-        val allPieceTypes = PieceType.entries.toMutableList()
+        val allPieceTypes = mutableListOf<PieceType>()
+        repeat(5) {
+            allPieceTypes.addAll(PieceType.entries)
+        }
         allPieceTypes.shuffle()
         bag.addAll(allPieceTypes)
     }

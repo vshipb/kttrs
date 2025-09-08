@@ -5,7 +5,7 @@ A classic block-stacking game built with modern Android development tools. This 
 ## Features
 
 *   **Classic Gameplay:** Enjoy the timeless gameplay of Tetris.
-*   **7-Bag Randomizer:** A fair piece generation system that ensures you get all 7 unique pieces in every bag.
+*   **35-Bag Randomizer:** A fair piece generation system that ensures you get all 7 unique pieces in every 5 bags.
 *   **Scoring System:** Keep track of your score and cleared lines.
 *   **High Score:** Your top score is saved for you to beat.
 *   **Ghost Piece:** A helpful indicator to show where your current piece will land.
@@ -83,7 +83,7 @@ The project is a standard Android application with a single module (`app`).
 
 *   `app/src/main/java/vsh/kttrs/`: Main source code.
     *   `data/`: Data storage (e.g., `SettingsDataStore` for high scores and preferences).
-    *   `model/`: Data classes and game logic (`GameViewModel`, `Piece`, `SevenBagRandomizer`).
+    *   `model/`: Data classes and game logic (`GameViewModel`, `Piece`, `ThirtyFiveBagRandomizer`).
     *   `ui/`: Jetpack Compose UI components and screens.
         *   `game/`: Composables related to the game screen itself (`GameBoard`, `TetrisGame`).
     *   `MainActivity.kt`: The main entry point of the application.

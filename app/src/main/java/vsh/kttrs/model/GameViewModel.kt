@@ -83,7 +83,7 @@ class GameViewModel(
     }
 
     private fun createNewGameState(): GameState {
-        SevenBagRandomizer.restart()
+        ThirtyFiveBagRandomizer.restart()
         return GameState(currentPiece = randomPiece(), nextPiece = randomPiece())
     }
 
@@ -500,7 +500,7 @@ class GameViewModel(
     }
 
     private fun randomPiece(): Piece {
-        val pieceType = SevenBagRandomizer.nextPiece()
+        val pieceType = ThirtyFiveBagRandomizer.nextPiece()
         return Piece(
             spec = pieceType,
             x = BOARD_WIDTH / 2 - 1,
