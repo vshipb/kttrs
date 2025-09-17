@@ -1,5 +1,9 @@
 package vsh.kttrs
 
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.every
+import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.cancelAndJoin
@@ -16,10 +20,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.never
-import org.mockito.kotlin.verify
-import org.mockito.kotlin.whenever
 import vsh.kttrs.data.SettingsDataStore
 import vsh.kttrs.model.GameConstants.BOARD_HEIGHT
 import vsh.kttrs.model.GameConstants.BOARD_WIDTH
@@ -36,14 +36,15 @@ class GameViewModelTest {
 
     private val testScheduler = TestCoroutineScheduler()
     private val testDispatcher = StandardTestDispatcher(testScheduler)
-    private val settingsDataStore: SettingsDataStore = mock()
+    private val settingsDataStore: SettingsDataStore = mockk()
 
     @Before
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
-        whenever(settingsDataStore.controlMode).thenReturn(flowOf(ControlMode.Buttons))
-        whenever(settingsDataStore.showGhostPiece).thenReturn(flowOf(true))
-        whenever(settingsDataStore.highScore).thenReturn(flowOf(0)) // Mock high score
+        every { settingsDataStore.controlMode } returns flowOf(ControlMode.Buttons)
+        every { settingsDataStore.showGhostPiece } returns flowOf(true)
+        every { settingsDataStore.highScore } returns flowOf(0) // Mock high score
+        coEvery { settingsDataStore.saveHighScore(any()) } returns Unit // Added this line
     }
 
     @After
@@ -362,7 +363,7 @@ class GameViewModelTest {
         val spawnY = 0
         val initialHighScore = 100
         val newHighScore = 200
-        whenever(settingsDataStore.highScore).thenReturn(flowOf(initialHighScore))
+        every { settingsDataStore.highScore } returns flowOf(initialHighScore)
         // Re-initialize viewModel for this specific test case's mock setup
         val viewModel = GameViewModel(settingsDataStore, testDispatcher)
         testDispatcher.scheduler.runCurrent() // Allow initial highScore collection
@@ -388,7 +389,7 @@ class GameViewModelTest {
         testDispatcher.scheduler.advanceTimeBy(GameViewModel.LINE_CLEAR_DELAY_MS + 1) // Allow animations/delays
         testDispatcher.scheduler.runCurrent() // Allow saveHighScore to be called
 
-        verify(settingsDataStore).saveHighScore(newHighScore)
+        coVerify { settingsDataStore.saveHighScore(newHighScore) }
         viewModel.gameJob?.cancelAndJoin()
     }
 
@@ -398,7 +399,7 @@ class GameViewModelTest {
         val spawnY = 0
         val initialHighScore = 100
         val score = 50
-        whenever(settingsDataStore.highScore).thenReturn(flowOf(initialHighScore))
+        every { settingsDataStore.highScore } returns flowOf(initialHighScore)
         val viewModel = GameViewModel(settingsDataStore, testDispatcher)
         testDispatcher.scheduler.runCurrent()
 
@@ -422,7 +423,7 @@ class GameViewModelTest {
         testDispatcher.scheduler.runCurrent()
 
 
-        verify(settingsDataStore, never()).saveHighScore(score)
+        coVerify(exactly = 0) { settingsDataStore.saveHighScore(score) }
         viewModel.gameJob?.cancelAndJoin()
     }
 
@@ -430,7 +431,7 @@ class GameViewModelTest {
     fun `topScore should be initialized with persisted high score`() = runTest {
         // Arrange
         val persistedHighScore = 500
-        whenever(settingsDataStore.highScore).thenReturn(flowOf(persistedHighScore))
+        every { settingsDataStore.highScore } returns flowOf(persistedHighScore)
 
         // Act
         val viewModel = GameViewModel(settingsDataStore, testDispatcher)
@@ -449,7 +450,7 @@ class GameViewModelTest {
         val initialHighScore = 100
         val newScore = 150
         // Ensure the initial highScore from settingsDataStore is collected first
-        whenever(settingsDataStore.highScore).thenReturn(flowOf(initialHighScore))
+        every { settingsDataStore.highScore } returns flowOf(initialHighScore)
         val viewModel = GameViewModel(settingsDataStore, testDispatcher) // Re-initialize for this test's specific mock
         testDispatcher.scheduler.runCurrent() // Collect initial highScore
 
