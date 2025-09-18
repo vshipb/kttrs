@@ -407,8 +407,7 @@ class GameViewModelTest {
         board[spawnY][spawnX] = 1
 
         val pieceToPlace = Piece(spec = TestPieceSpec(shape = listOf(listOf(1))), x = 0, y = 5)
-        val nextPiece =
-            Piece(spec = TestPieceSpec(shape = listOf(listOf(1))), x = spawnX, y = spawnY)
+        val nextPiece = Piece(spec = TestPieceSpec(shape = listOf(listOf(1))), x = spawnX, y = spawnY)
 
         val gameState = viewModel.gameState.value.copy(
             board = board,
@@ -435,7 +434,6 @@ class GameViewModelTest {
 
         // Act
         val viewModel = GameViewModel(settingsDataStore, testDispatcher)
-
         testDispatcher.scheduler.runCurrent()
 
         // Assert
@@ -463,7 +461,6 @@ class GameViewModelTest {
         // Assert
         assertEquals(newScore, viewModel.topScore.value)
 
-        // Очистка
         viewModel.gameJob?.cancelAndJoin()
     }
 
@@ -485,15 +482,15 @@ class GameViewModelTest {
             linesCleared = 0,
         )
         model.setGameStateForTest(gameState)
-        printBoardState(model)
+        model.printBoardState()
         model.rotatePieceLeft()
-        printBoardState(model)
+        model.printBoardState()
         model.placePiece()
-        printBoardState(model)
+        model.printBoardState()
         testDispatcher.scheduler.runCurrent() // Execute immediate tasks from placePiece
         testDispatcher.scheduler.advanceTimeBy(GameViewModel.LINE_CLEAR_DELAY_MS + 1)
         testDispatcher.scheduler.runCurrent() // Execute tasks scheduled by those delays
-        printBoardState(model)
+        model.printBoardState()
 
         // Assert
         assertEquals(800, model.gameState.value.score)
@@ -504,9 +501,9 @@ class GameViewModelTest {
     fun `T-Spin Single should clear one line and add something to score`() = runTestAndCleanup { model ->
         val board = Array(BOARD_HEIGHT) { IntArray(BOARD_WIDTH) }
 
-        board[19] = intArrayOf(0,1,0,0,0,0,0,0,0,0)
-        board[20] = intArrayOf(1,1,0,0,0,1,1,1,1,1)
-        board[21] = intArrayOf(0,1,1,0,0,0,0,0,0,0)
+        board[19] = intArrayOf(0, 1, 0, 0, 0, 0, 0, 0, 0, 0)
+        board[20] = intArrayOf(1, 1, 0, 0, 0, 1, 1, 1, 1, 1)
+        board[21] = intArrayOf(0, 1, 1, 0, 0, 0, 0, 0, 0, 0)
 
         val tPieceInitial = Piece(
             spec = PieceType.T,
@@ -522,28 +519,27 @@ class GameViewModelTest {
             linesCleared = 0
         )
         model.setGameStateForTest(initialGameState)
-        printBoardState(model)
+        model.printBoardState()
 
         model.rotatePieceLeft()
-        printBoardState(model)
+        model.printBoardState()
         model.placePiece()
-        printBoardState(model)
+        model.printBoardState()
         testDispatcher.scheduler.runCurrent()
         testDispatcher.scheduler.advanceTimeBy(GameViewModel.LINE_CLEAR_DELAY_MS + 1)
         testDispatcher.scheduler.runCurrent()
-        printBoardState(model)
+        model.printBoardState()
 
         val finalState = model.gameState.value
         assertEquals( 1, finalState.linesCleared)
         assertEquals(100, finalState.score) // TODO: Check actual T-Spin single score
     }
 
-    private fun printBoardState(model: GameViewModel, message: String = "Board State:") {
-        val board = model.gameState.value.board
-        val currentPiece = model.gameState.value.currentPiece
-        val tempBoard = board.map { it.clone() }.toTypedArray()
+    private fun GameViewModel.printBoardState(message: String = "Board State:") {
+        val board = gameState.value.board
+        val currentPiece = gameState.value.currentPiece
+        val boardChars = board.map { ints ->  ints.map { if (it == 0) '.' else PieceType.entries[it - 1].name.first().lowercaseChar()}.toCharArray() }.toTypedArray()
 
-        // Overlay current piece on the board
         val shape = currentPiece.shape
         for (y in shape.indices) {
             for (x in shape[y].indices) {
@@ -551,44 +547,14 @@ class GameViewModelTest {
                     val boardX = currentPiece.x + x
                     val boardY = currentPiece.y + y
                     if (boardX >= 0 && boardX < BOARD_WIDTH && boardY >= 0 && boardY < BOARD_HEIGHT) {
-                        tempBoard[boardY][boardX] = currentPiece.type?.ordinal?.plus(1) ?: 0 // Use piece type ordinal + 1 for occupied cells
+                        boardChars[boardY][boardX] = currentPiece.type?.name?.first() ?: 'X'
                     }
                 }
             }
         }
-
         println(message)
-        for (y in tempBoard.indices) {
-            for (x in tempBoard[y].indices) {
-                val cellValue = tempBoard[y][x]
-                if (cellValue == 0) {
-                    print(". ")
-                } else {
-                    // Map piece type ordinal to a letter
-                    val pieceChar = PieceType.entries[cellValue - 1].name.lowercase().first()
-                    // Check if this cell is part of the current piece
-                    var isCurrentPieceCell = false
-                    for (py in shape.indices) {
-                        for (px in shape[py].indices) {
-                            if (shape[py][px] == 1) {
-                                val boardX = currentPiece.x + px
-                                val boardY = currentPiece.y + py
-                                if (boardX == x && boardY == y) {
-                                    isCurrentPieceCell = true
-                                    break
-                                }
-                            }
-                        }
-                        if (isCurrentPieceCell) break
-                    }
-
-                    if (isCurrentPieceCell) {
-                        print("${pieceChar.uppercaseChar()} ")
-                    } else {
-                        print("$pieceChar ")
-                    }
-                }
-            }
+        boardChars.forEach {
+            it.forEach { print("$it ") }
             println()
         }
         println("Piece X: ${currentPiece.x}, Y: ${currentPiece.y}, Rotation: ${currentPiece.rotation}")
