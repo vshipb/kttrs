@@ -17,6 +17,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -65,55 +66,47 @@ class GameViewModelTest {
     @Test
     fun `movePiece should move the current piece`() = runTestAndCleanup { model ->
         val initialX = model.gameState.value.currentPiece.x
-
         model.movePiece(1)
-
         assertEquals(initialX + 1, model.gameState.value.currentPiece.x)
     }
 
     @Test
     fun `movePiece should not move the current piece if it would go out of bounds`() = runTestAndCleanup { model ->
-        val initialPiece = Piece(spec = TestPieceSpec(shape = listOf(listOf(1))), x = 0, y = 0)
-        val gameState = model.gameState.value.copy(currentPiece = initialPiece)
+        val gameState = model.gameState.value.copy(currentPiece = testPiece())
         model.setGameStateForTest(gameState)
-
         model.movePiece(-1)
-
         assertEquals(0, model.gameState.value.currentPiece.x)
     }
 
     @Test
     fun `restartGame should reset the game state`() = runTestAndCleanup { model ->
-        // Change some state to ensure it resets
-        val initialPiece = Piece(spec = TestPieceSpec(shape = listOf(listOf(1))), x = 5, y = 5)
-        val initialBoard = Array(BOARD_HEIGHT) { IntArray(BOARD_WIDTH) }
-        initialBoard[0][0] = 1 // Place something on the board
+        val initialBoard = emptyBoard()
+        initialBoard[0][0] = 1
         val gameState = GameState(
             board = initialBoard,
-            currentPiece = initialPiece,
-            nextPiece = Piece(spec = TestPieceSpec(shape = listOf(listOf(1))), x = 0, y = 0),
+            currentPiece = testPiece(x = 5, y = 5),
+            nextPiece = testPiece(),
             score = 100,
             gameOver = true,
             linesCleared = 10
         )
-        model.setGameStateForTest(gameState) // This cancels previous gameJob
+        model.setGameStateForTest(gameState)
 
-        model.restartGame() // This starts a new gameJob
-        testDispatcher.scheduler.runCurrent() // Allow init tasks of restart to complete
+        model.restartGame()
+        testDispatcher.scheduler.runCurrent()
 
         val newState = model.gameState.value
         assertEquals(0, newState.score)
-        assertEquals(false, newState.gameOver)
+        assertFalse(newState.gameOver)
         assertEquals(0, newState.linesCleared)
-        assertEquals(true, newState.board.all { row -> row.all { it == 0 } })
-        assertEquals(false, newState.currentPiece == initialPiece)
+        assertTrue(newState.board.all { row -> row.all { it == 0 } })
+        assertFalse(newState.currentPiece == testPiece())
     }
 
     @Test
     fun `holdPiece should swap current piece with held piece when held piece is null`() = runTestAndCleanup { model ->
-        val initialCurrentPiece =
-            Piece(spec = TestPieceSpec(shape = listOf(listOf(1))), x = 0, y = 0)
-        val initialNextPiece = Piece(spec = TestPieceSpec(shape = listOf(listOf(1))), x = 0, y = 0)
+        val initialCurrentPiece = testPiece()
+        val initialNextPiece = testPiece()
         val gameState = model.gameState.value.copy(
             currentPiece = initialCurrentPiece,
             nextPiece = initialNextPiece,
@@ -121,21 +114,18 @@ class GameViewModelTest {
             canHold = true
         )
         model.setGameStateForTest(gameState)
-
         model.holdPiece()
-
         val newState = model.gameState.value
         assertEquals(initialNextPiece, newState.currentPiece)
         assertEquals(initialCurrentPiece, newState.heldPiece)
-        assertEquals(false, newState.canHold)
+        assertFalse(newState.canHold)
     }
 
     @Test
     fun `holdPiece should swap current piece with held piece when held piece is not null`() = runTestAndCleanup { model ->
-        val initialCurrentPiece =
-            Piece(spec = TestPieceSpec(shape = listOf(listOf(1))), x = 0, y = 0)
-        val initialNextPiece = Piece(spec = TestPieceSpec(shape = listOf(listOf(1))), x = 0, y = 0)
-        val initialHeldPiece = Piece(spec = TestPieceSpec(shape = listOf(listOf(1))), x = 0, y = 0)
+        val initialCurrentPiece = testPiece()
+        val initialNextPiece = testPiece()
+        val initialHeldPiece = testPiece()
         val gameState = model.gameState.value.copy(
             currentPiece = initialCurrentPiece,
             nextPiece = initialNextPiece,
@@ -143,22 +133,19 @@ class GameViewModelTest {
             canHold = true
         )
         model.setGameStateForTest(gameState)
-
         model.holdPiece()
         testDispatcher.scheduler.runCurrent()
-
         val newState = model.gameState.value
         assertEquals(initialHeldPiece, newState.currentPiece)
         assertEquals(initialCurrentPiece, newState.heldPiece)
-        assertEquals(false, newState.canHold)
+        assertFalse(newState.canHold)
     }
 
     @Test
     fun `holdPiece should not do anything if canHold is false`() = runTestAndCleanup { model ->
-        val initialCurrentPiece =
-            Piece(spec = TestPieceSpec(shape = listOf(listOf(1))), x = 0, y = 0)
-        val initialNextPiece = Piece(spec = TestPieceSpec(shape = listOf(listOf(1))), x = 0, y = 0)
-        val initialHeldPiece = Piece(spec = TestPieceSpec(shape = listOf(listOf(1))), x = 0, y = 0)
+        val initialCurrentPiece = testPiece()
+        val initialNextPiece = testPiece()
+        val initialHeldPiece = testPiece()
         val gameState = model.gameState.value.copy(
             currentPiece = initialCurrentPiece,
             nextPiece = initialNextPiece,
@@ -166,46 +153,35 @@ class GameViewModelTest {
             canHold = false
         )
         model.setGameStateForTest(gameState)
-
         model.holdPiece()
         testDispatcher.scheduler.runCurrent()
-
         val newState = model.gameState.value
         assertEquals(initialCurrentPiece, newState.currentPiece)
         assertEquals(initialHeldPiece, newState.heldPiece)
-        assertEquals(false, newState.canHold)
+        assertFalse(newState.canHold)
     }
 
     @Test
     fun `hardDrop should drop the piece to the bottom and place it`() = runTestAndCleanup { model ->
-        val initialPiece = Piece(spec = TestPieceSpec(shape = listOf(listOf(1))), x = 0, y = 0)
-        val initialNextPiece =
-            Piece(spec = TestPieceSpec(shape = listOf(listOf(1, 1))), x = 0, y = 0)
         val gameState = model.gameState.value.copy(
-            currentPiece = initialPiece,
-            nextPiece = initialNextPiece
+            currentPiece = testPiece(),
+            nextPiece = testPiece()
         )
         model.setGameStateForTest(gameState)
-
-        model.hardDrop() // This calls placePiece which starts animations and gameJob
+        model.hardDrop()
         testDispatcher.scheduler.runCurrent()
-        // Advance time for line clear animations if any, or general processing
         testDispatcher.scheduler.advanceTimeBy(GameViewModel.LINE_CLEAR_DELAY_MS + 1)
         testDispatcher.scheduler.runCurrent()
 
-
         val newState = model.gameState.value
-        val pieceIndex = 0
-        assertEquals(pieceIndex + 1, newState.board[BOARD_HEIGHT - 1][0])
-        assertEquals(false, newState.gameOver)
-        assertEquals(false, newState.currentPiece == initialPiece)
+        assertEquals(1, newState.board[BOARD_HEIGHT - 1][0])
+        assertFalse(newState.gameOver)
     }
 
     @Test
     fun `hardDrop newY calculation should be correct`() = runTestAndCleanup { model ->
-        val initialPiece = Piece(spec = TestPieceSpec(shape = listOf(listOf(1))), x = 0, y = 0)
-        val initialBoard = Array(BOARD_HEIGHT) { IntArray(BOARD_WIDTH) }
-
+        val initialPiece = testPiece()
+        val initialBoard = emptyBoard()
         var newY = initialPiece.y
         while (true) {
             val nextY = newY + 1
@@ -222,13 +198,11 @@ class GameViewModelTest {
     @Test
     fun `rotatePieceRight should rotate the piece clockwise`() = runTestAndCleanup { model ->
         val squareShape = listOf(listOf(1, 1), listOf(1, 1))
-        val initialPiece = Piece(spec = TestPieceSpec(shape = squareShape), x = 0, y = 0)
+        val initialPiece = testPiece(shape = squareShape)
         val gameState = model.gameState.value.copy(currentPiece = initialPiece)
         model.setGameStateForTest(gameState)
-
         model.rotatePieceRight()
         testDispatcher.scheduler.runCurrent()
-
         val newState = model.gameState.value
         assertEquals(squareShape, newState.currentPiece.shape)
     }
@@ -236,26 +210,19 @@ class GameViewModelTest {
     @Test
     fun `rotatePieceLeft should rotate the piece counter-clockwise`() = runTestAndCleanup { model ->
         val squareShape = listOf(listOf(1, 1), listOf(1, 1))
-        val initialPiece = Piece(spec = TestPieceSpec(shape = squareShape), x = 0, y = 0)
+        val initialPiece = testPiece(shape = squareShape)
         val gameState = model.gameState.value.copy(currentPiece = initialPiece)
         model.setGameStateForTest(gameState)
-
         model.rotatePieceLeft()
         testDispatcher.scheduler.runCurrent()
-
         val newState = model.gameState.value
         assertEquals(squareShape, newState.currentPiece.shape)
     }
 
     @Test
     fun `placePiece should place the current piece on the board`() = runTestAndCleanup { model ->
-        val initialBoard = Array(BOARD_HEIGHT) { IntArray(BOARD_WIDTH) }
-        val pieceToPlace = Piece(
-            spec = TestPieceSpec(shape = listOf(listOf(1))),
-            x = 0,
-            y = BOARD_HEIGHT - 1
-        )
-
+        val initialBoard = emptyBoard()
+        val pieceToPlace = testPiece(x = 0, y = BOARD_HEIGHT - 1)
         val gameState = model.gameState.value.copy(
             board = initialBoard,
             currentPiece = pieceToPlace,
@@ -263,12 +230,10 @@ class GameViewModelTest {
             linesCleared = 0
         )
         model.setGameStateForTest(gameState)
-
         model.placePiece()
         testDispatcher.scheduler.runCurrent()
         testDispatcher.scheduler.advanceTimeBy(GameViewModel.LINE_CLEAR_DELAY_MS + 1)
         testDispatcher.scheduler.runCurrent()
-
         val newState = model.gameState.value
         val pieceIndex = 0
         assertEquals(pieceIndex + 1, newState.board[BOARD_HEIGHT - 1][0])
@@ -276,81 +241,57 @@ class GameViewModelTest {
 
     @Test
     fun `isValidPosition should return true for a valid position`() = runTestAndCleanup { model ->
-        val piece = Piece(spec = TestPieceSpec(shape = listOf(listOf(1))), x = 0, y = 0)
-        val board = Array(BOARD_HEIGHT) { IntArray(BOARD_WIDTH) }
-        val result = model.isValidPosition(piece, board)
-        assertEquals(true, result)
+        assertTrue(model.isValidPosition(testPiece(),emptyBoard()))
     }
 
     @Test
     fun `isValidPosition should return false if piece is out of bounds (left)`() = runTestAndCleanup { model ->
-        val piece = Piece(spec = TestPieceSpec(shape = listOf(listOf(1))), x = -1, y = 0)
-        val board = Array(BOARD_HEIGHT) { IntArray(BOARD_WIDTH) }
-        val result = model.isValidPosition(piece, board)
-        assertEquals(false, result)
+        assertFalse(model.isValidPosition(testPiece(x = -1), emptyBoard()))
     }
 
     @Test
     fun `isValidPosition should return false if piece is out of bounds (right)`() = runTestAndCleanup { model ->
-        val piece = Piece(spec = TestPieceSpec(shape = listOf(listOf(1))), x = BOARD_WIDTH, y = 0)
-        val board = Array(BOARD_HEIGHT) { IntArray(BOARD_WIDTH) }
-        val result = model.isValidPosition(piece, board)
-        assertEquals(false, result)
+        assertFalse(model.isValidPosition(testPiece(x = BOARD_WIDTH), emptyBoard()))
     }
 
     @Test
     fun `isValidPosition should return false if piece is out of bounds (bottom)`() = runTestAndCleanup { model ->
-        val piece = Piece(spec = TestPieceSpec(shape = listOf(listOf(1))), x = 0, y = BOARD_HEIGHT)
-        val board = Array(BOARD_HEIGHT) { IntArray(BOARD_WIDTH) }
-        val result = model.isValidPosition(piece, board)
-        assertEquals(false, result)
+        assertFalse(model.isValidPosition(testPiece(y = BOARD_HEIGHT), emptyBoard()))
     }
 
     @Test
     fun `isValidPosition should return false if piece overlaps with existing blocks`() = runTestAndCleanup { model ->
-        val piece = Piece(spec = TestPieceSpec(shape = listOf(listOf(1))), x = 0, y = 0)
-        val board = Array(BOARD_HEIGHT) { IntArray(BOARD_WIDTH) }
+        val board = emptyBoard()
         board[0][0] = 1 // Place a block at (0,0)
-        val result = model.isValidPosition(piece, board)
-        assertEquals(false, result)
+        assertFalse(model.isValidPosition(testPiece(), board))
     }
 
     @Test
     fun `getClearedLines should return the indices of cleared lines`() = runTestAndCleanup { model ->
-        val initialBoard = Array(BOARD_HEIGHT) { IntArray(BOARD_WIDTH) }
+        val initialBoard = emptyBoard()
         for (x in 0 until BOARD_WIDTH) {
             initialBoard[BOARD_HEIGHT - 1][x] = 1
         }
-
         val clearedLinesIndices = model.getClearedLines(initialBoard)
-
         assertEquals(1, clearedLinesIndices.size)
         assertEquals(BOARD_HEIGHT - 1, clearedLinesIndices[0])
     }
 
     @Test
     fun `placePiece should trigger line clearing and update score`() = runTestAndCleanup { model ->
-        val initialBoard = Array(BOARD_HEIGHT) { IntArray(BOARD_WIDTH) }
+        val initialBoard = emptyBoard()
         for (x in 1 until BOARD_WIDTH) {
             initialBoard[BOARD_HEIGHT - 1][x] = 1
         }
-        val pieceToPlace = Piece(
-            spec = TestPieceSpec(shape = listOf(listOf(1))),
-            x = 0,
-            y = BOARD_HEIGHT - 1
-        )
-
         val gameState = model.gameState.value.copy(
             board = initialBoard,
-            currentPiece = pieceToPlace
+            currentPiece = testPiece(x = 0, y = BOARD_HEIGHT - 1)
         )
         model.setGameStateForTest(gameState)
-
         model.placePiece()
         testDispatcher.scheduler.runCurrent()
         testDispatcher.scheduler.advanceTimeBy(GameViewModel.LINE_CLEAR_DELAY_MS + 1)
         testDispatcher.scheduler.runCurrent()
-
         assertTrue(model.gameState.value.board[0].all { it == 0 })
         assertEquals(100, model.gameState.value.score)
         assertEquals(1, model.gameState.value.linesCleared)
@@ -364,31 +305,22 @@ class GameViewModelTest {
         val initialHighScore = 100
         val newHighScore = 200
         every { settingsDataStore.highScore } returns flowOf(initialHighScore)
-        // Re-initialize viewModel for this specific test case's mock setup
         val viewModel = GameViewModel(settingsDataStore, testDispatcher)
         testDispatcher.scheduler.runCurrent() // Allow initial highScore collection
-
-        val board = Array(BOARD_HEIGHT) { IntArray(BOARD_WIDTH) }
+        val board = emptyBoard()
         board[spawnY][spawnX] = 1
-
-        val pieceToPlace = Piece(spec = TestPieceSpec(shape = listOf(listOf(1))), x = 0, y = 5)
-        val nextPiece =
-            Piece(spec = TestPieceSpec(shape = listOf(listOf(1))), x = spawnX, y = spawnY)
-
         val gameState = viewModel.gameState.value.copy(
             board = board,
-            currentPiece = pieceToPlace,
-            nextPiece = nextPiece,
+            currentPiece = testPiece(x = 0, y = 5),
+            nextPiece = testPiece(x = spawnX, y = spawnY),
             score = newHighScore
         )
         viewModel.setGameStateForTest(gameState) // Cancels previous gameJob
         testDispatcher.scheduler.runCurrent() // Allow state to settle
-
         viewModel.placePiece() // Starts new gameJob and potential saveHighScore
         testDispatcher.scheduler.runCurrent()
         testDispatcher.scheduler.advanceTimeBy(GameViewModel.LINE_CLEAR_DELAY_MS + 1) // Allow animations/delays
         testDispatcher.scheduler.runCurrent() // Allow saveHighScore to be called
-
         coVerify { settingsDataStore.saveHighScore(newHighScore) }
         viewModel.gameJob?.cancelAndJoin()
     }
@@ -402,79 +334,53 @@ class GameViewModelTest {
         every { settingsDataStore.highScore } returns flowOf(initialHighScore)
         val viewModel = GameViewModel(settingsDataStore, testDispatcher)
         testDispatcher.scheduler.runCurrent()
-
-        val board = Array(BOARD_HEIGHT) { IntArray(BOARD_WIDTH) }
+        val board = emptyBoard()
         board[spawnY][spawnX] = 1
-
-        val pieceToPlace = Piece(spec = TestPieceSpec(shape = listOf(listOf(1))), x = 0, y = 5)
-        val nextPiece = Piece(spec = TestPieceSpec(shape = listOf(listOf(1))), x = spawnX, y = spawnY)
 
         val gameState = viewModel.gameState.value.copy(
             board = board,
-            currentPiece = pieceToPlace,
-            nextPiece = nextPiece,
+            currentPiece = testPiece(x = 0, y = 5),
+            nextPiece = testPiece(x = spawnX, y = spawnY),
             score = score
         )
         viewModel.setGameStateForTest(gameState)
         testDispatcher.scheduler.runCurrent()
-
         viewModel.placePiece()
         testDispatcher.scheduler.runCurrent()
-
-
         coVerify(exactly = 0) { settingsDataStore.saveHighScore(score) }
         viewModel.gameJob?.cancelAndJoin()
     }
 
     @Test
     fun `topScore should be initialized with persisted high score`() = runTest {
-        // Arrange
         val persistedHighScore = 500
         every { settingsDataStore.highScore } returns flowOf(persistedHighScore)
-
-        // Act
         val viewModel = GameViewModel(settingsDataStore, testDispatcher)
         testDispatcher.scheduler.runCurrent()
-
-        // Assert
         assertEquals(persistedHighScore, viewModel.topScore.value)
-
         viewModel.gameJob?.cancelAndJoin()
     }
 
     @Test
     fun `topScore should be updated when game score surpasses it`() = runTest {
-        // Arrange
-        val initialHighScore = 100
         val newScore = 150
-        // Ensure the initial highScore from settingsDataStore is collected first
-        every { settingsDataStore.highScore } returns flowOf(initialHighScore)
-        val viewModel = GameViewModel(settingsDataStore, testDispatcher) // Re-initialize for this test's specific mock
-        testDispatcher.scheduler.runCurrent() // Collect initial highScore
-
-        // Act
-        // Simulate a game state change that updates the score
+        every { settingsDataStore.highScore } returns flowOf(100)
+        val viewModel = GameViewModel(settingsDataStore, testDispatcher)
+        testDispatcher.scheduler.runCurrent()
         val gameState = viewModel.gameState.value.copy(score = newScore)
-        viewModel.setGameStateForTest(gameState) // This will also update the internal _gameState
-        testDispatcher.scheduler.runCurrent() // Allow collectors listening to _gameState to run
-
-        // Assert
+        viewModel.setGameStateForTest(gameState)
+        testDispatcher.scheduler.runCurrent()
         assertEquals(newScore, viewModel.topScore.value)
-
         viewModel.gameJob?.cancelAndJoin()
     }
 
 
     @Test
     fun `T-Spin Mini Single should clear one line and add 800 to score`() = runTestAndCleanup { model ->
-        // Arrange
-        val board = Array(BOARD_HEIGHT) { IntArray(BOARD_WIDTH) }
-        // Create a T-Spin setup
+        val board = emptyBoard()
         board[20] = intArrayOf(0, 0, 1, 1, 1, 1, 1, 1, 1, 1)
         board[21] = intArrayOf(0, 0, 0, 1, 1, 1, 1, 1, 1, 1)
-
         val tPiece = Piece(spec = PieceType.T, x = -1, y = 19, rotation = 1)
-
         val gameState = model.gameState.value.copy(
             board = board,
             currentPiece = tPiece,
@@ -491,27 +397,22 @@ class GameViewModelTest {
         testDispatcher.scheduler.advanceTimeBy(GameViewModel.LINE_CLEAR_DELAY_MS + 1)
         testDispatcher.scheduler.runCurrent() // Execute tasks scheduled by those delays
         model.printBoardState()
-
-        // Assert
         assertEquals(800, model.gameState.value.score)
         assertEquals(1, model.gameState.value.linesCleared)
     }
 
     @Test
     fun `T-Spin Single should clear one line and add something to score`() = runTestAndCleanup { model ->
-        val board = Array(BOARD_HEIGHT) { IntArray(BOARD_WIDTH) }
-
+        val board = emptyBoard()
         board[19] = intArrayOf(0, 1, 0, 0, 0, 0, 0, 0, 0, 0)
         board[20] = intArrayOf(1, 1, 0, 0, 0, 1, 1, 1, 1, 1)
         board[21] = intArrayOf(0, 1, 1, 0, 0, 0, 0, 0, 0, 0)
-
         val tPieceInitial = Piece(
             spec = PieceType.T,
             x = 2,
             y = 19,
             rotation = 1
         )
-
         val initialGameState = model.gameState.value.copy(
             board = board.map { it.clone() }.toTypedArray(),
             currentPiece = tPieceInitial,
@@ -520,7 +421,6 @@ class GameViewModelTest {
         )
         model.setGameStateForTest(initialGameState)
         model.printBoardState()
-
         model.rotatePieceLeft()
         model.printBoardState()
         model.placePiece()
@@ -529,7 +429,6 @@ class GameViewModelTest {
         testDispatcher.scheduler.advanceTimeBy(GameViewModel.LINE_CLEAR_DELAY_MS + 1)
         testDispatcher.scheduler.runCurrent()
         model.printBoardState()
-
         val finalState = model.gameState.value
         assertEquals( 1, finalState.linesCleared)
         assertEquals(100, finalState.score) // TODO: Check actual T-Spin single score
@@ -538,15 +437,16 @@ class GameViewModelTest {
     private fun GameViewModel.printBoardState(message: String = "Board State:") {
         val board = gameState.value.board
         val currentPiece = gameState.value.currentPiece
-        val boardChars = board.map { ints ->  ints.map { if (it == 0) '.' else PieceType.entries[it - 1].name.first().lowercaseChar()}.toCharArray() }.toTypedArray()
-
+        val boardChars = board.map { ints ->  ints.map {
+            if (it == 0) '.'
+            else PieceType.entries[it - 1].name.first().lowercaseChar()}.toCharArray() }.toTypedArray()
         val shape = currentPiece.shape
         for (y in shape.indices) {
             for (x in shape[y].indices) {
                 if (shape[y][x] == 1) {
                     val boardX = currentPiece.x + x
                     val boardY = currentPiece.y + y
-                    if (boardX >= 0 && boardX < BOARD_WIDTH && boardY >= 0 && boardY < BOARD_HEIGHT) {
+                    if (boardX in 0 .. BOARD_WIDTH && boardY in 0 .. BOARD_HEIGHT) {
                         boardChars[boardY][boardX] = currentPiece.type?.name?.first() ?: 'X'
                     }
                 }
@@ -554,10 +454,13 @@ class GameViewModelTest {
         }
         println(message)
         boardChars.forEach {
-            it.forEach { print("$it ") }
-            println()
+            println(it.joinToString(" "))
         }
         println("Piece X: ${currentPiece.x}, Y: ${currentPiece.y}, Rotation: ${currentPiece.rotation}")
         println("--------------------")
     }
+
+    fun testPiece(x: Int = 0, y: Int = 0, rotation: Int = 0, shape: List<List<Int>> = listOf(listOf(1)))  = Piece(TestPieceSpec(shape), x, y, rotation)
+
+    fun emptyBoard() = Array(BOARD_HEIGHT) { IntArray(BOARD_WIDTH) }
 }

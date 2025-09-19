@@ -132,7 +132,7 @@ fun TetrisGame(gameViewModel: GameViewModel = viewModel(
             currentPiece = gameState.currentPiece,
             ghostPiece = gameState.ghostPiece,
             showGhostPiece = showGhostPiece,
-            clearingLines = gameState.clearingLines, // Add this
+            clearingLines = gameState.clearingLines,
             modifier = Modifier.Companion.fillMaxSize()
         )
 
